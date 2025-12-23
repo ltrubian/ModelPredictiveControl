@@ -1,0 +1,13 @@
+[project]
+name = "modelpredictivecontrol"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "acados-template",
+    "tqdm>=4.67.1",
+]
+
+[tool.uv.sources]
+acados-template = { path = "../../acados/interfaces/acados_template" }
