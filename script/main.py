@@ -134,7 +134,7 @@ def closed_loop_simulation(save_video=False):
     ts_sim = 0.001
 
     # model used to simulate the system
-    sim_model = get_inverted_pendulum_model(l=0.8)
+    sim_model = get_inverted_pendulum_model(l=0.9)
     sim_model.name = "sim_model"
 
     # initial condition
@@ -142,7 +142,7 @@ def closed_loop_simulation(save_video=False):
 
     # setup controller parameters
     # - system model
-    model = get_inverted_pendulum_model(type="linear")
+    model = get_inverted_pendulum_model()
     # - controller sample time [s]
     Ts = 0.02
     # - number of shooting time intervals
