@@ -5,9 +5,9 @@ from scipy.linalg import block_diag
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from inverted_pendulum_model import get_inverted_pendulum_model
-from utils import piecewise_constant, compute_num_steps, get_nonuniform_grid
-from plot_utils import (
+from script.inverted_pendulum_model import get_inverted_pendulum_model
+from script.utils import piecewise_constant, compute_num_steps, get_nonuniform_grid
+from script.plot_utils import (
     plot_results,
     plot_pred_traj,
     plot_cpt,
@@ -134,7 +134,7 @@ def closed_loop_simulation(save_video=False):
     ts_sim = 0.001
 
     # model used to simulate the system
-    sim_model = get_inverted_pendulum_model(l=0.9)
+    sim_model = get_inverted_pendulum_model(l=0.8)
     sim_model.name = "sim_model"
 
     # initial condition
