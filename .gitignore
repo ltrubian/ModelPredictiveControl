@@ -207,5 +207,14 @@ marimo/_lsp/
 __marimo__/
 
 # ACADOS
-**/c_generated_code/
-**/acados*.json
+/c_generated_code/
+acados*.json
+
+# Latex output files
+*.aux
+*.log
+*.nav
+*.snm
+*.synctex.gz
+*.out
+*.toc
