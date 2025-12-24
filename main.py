@@ -14,11 +14,25 @@ from script.plot_utils import (
     plot_grid,
     inverted_pendulum_animation,
 )
+from typing import Literal, get_args
+
+_INTEGRATOR_TYPE = Literal["ERK", "IRK"]
 
 
 def create_ocp_solver_description(
-    model, N, T, x0, shooting_nodes=None, apply_state_constraints=False
+    model,
+    N,
+    T,
+    x0,
+    Q=np.diag([10, 10, 0.1, 0.1]),  # state cost weigth matrices
+    R=0.01,  # input cost weigth matrices
+    shooting_nodes=None,
+    apply_state_constraints=False,
+    integrator_type: _INTEGRATOR_TYPE = "ERK",
 ) -> AcadosOcp:
+    assert integrator_type in get_args(_INTEGRATOR_TYPE), (
+        f"{integrator_type = } not in {get_args(_INTEGRATOR_TYPE)}"
+    )
     # create ocp object to formulate the OCP
     ocp = AcadosOcp()
 
@@ -49,10 +63,6 @@ def create_ocp_solver_description(
     # define cost type
     ocp.cost.cost_type = "LINEAR_LS"
     ocp.cost.cost_type_e = "LINEAR_LS"
-
-    # define cost weigth matrices
-    Q = np.diag([10, 10, 0.1, 0.1])
-    R = 0.01
 
     ocp.cost.W = block_diag(Q, R)
     ocp.cost.W_e = T / N * Q
@@ -110,7 +120,7 @@ def create_ocp_solver_description(
         "PARTIAL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES, PARTIAL_CONDENSING_HPIPM
     )
     ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
-    ocp.solver_options.integrator_type = "ERK"  # ERK, IRK
+    ocp.solver_options.integrator_type = integrator_type  # ERK, IRK
     ocp.solver_options.nlp_solver_type = "SQP"  # SQP, SQP_RTI
 
     # to configure partial condensing
@@ -185,7 +195,9 @@ def closed_loop_simulation(save_video=False):
     acados_integrator = AcadosSimSolver(sim, verbose=False)
 
     # create OCP solver
-    ocp = create_ocp_solver_description(model, N, T, x0, apply_state_constraints=False)
+    ocp = create_ocp_solver_description(
+        model, N, T, x0, apply_state_constraints=False, integrator_type="a"
+    )
     acados_ocp_solver = AcadosOcpSolver(ocp, verbose=False)
 
     # initialize solver
