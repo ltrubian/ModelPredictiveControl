@@ -69,299 +69,80 @@
 
 \title{\scshape{Inverted Pendulum}}
 \subtitle{\fontsize{12}{12} \scshape{Model Predictive Control}\vspace{.5cm}}
-\author{\fontsize{9}{9} \scshape{Student: Lorenzo Trubian} \\ \hspace{40pt} \fontsize{7}{7} \scshape{n° 2125512}\vspace{.5cm}}
+\author{\fontsize{9}{9} \scshape{Student: Lorenzo Trubian\\}  \hspace{40pt} \fontsize{7}{7} \scshape{n° 2125512}\vspace{.5cm}}
 \date{\fontsize{8}{8} \scshape{2 January 2026}}
 
 \parskip 6pt
 \begin{document}
 
 % TITOLO
-	\maketitle
+\maketitle
 % SOMMARIO
 %	\begin{frame}{Sommario}
 %		\tableofcontents
 %	\end{frame}
 % INTRODUZIONE 
 %	\section{Introduzione}
-%
-%	\begin{frame}{Introduzione}
-%		Ci proponiamo di descrivere alcune proprietà delle passeggiate aleatorie su grafi avvalendoci del linguaggio dei circuiti elettrici. L'interesse principale è quello di determinare se un grafo connesso dotato di pesi positivi è ricorrente o transiente e di applicare i risultati ottenuti ai casi particolari di $\ZZ^2$ e $\ZZ^3$. \vspace{.5em}
-%		\begin{itemize}
-%			\item   \vspace{.5em}
-%			\item   \vspace{.5em}
-%			\item 
-%		\end{itemize}
-%	\end{frame}
-
-% SEZIONE FUNZIONI ARMONICHE E PASSEGGIATE ALEATORIE
-	\section{Extended model}
-	\begin{frame}{Catene di Markov e Reti}
-
-			\begin{block}{Definizione (Rete)}
-				Una \textbf{rete}
-			\end{block}
-			\vspace{-.5cm}
-		\begin{figure}
-			\caption{Esempio di rete. In ogni vertice è segnato $\pi(x)$.}
 
 
-		\end{figure}
-	\end{frame}
-	
-	\begin{frame}{Catene di Markov e Reti}
-			Identificheremo in maniera univoca una passeggiata aleatoria su una rete ponendo le probabilità di transizione della catena di Markov $\{X_n\}_{n\geq0}$
-			\begin{equation}
-			p_{xy} := \PP(X_{t+1} = y \mid X_t = x) = \frac{c_{xy}}{\pi(x)}.
-			\end{equation}
-			Viceversa, ad ogni catena di Markov reversibile e omogenea si può associare una rete $G=(V,E)$ ponendo in corrispondenza i vertici con gli stati della catena, congiungendo ogni coppia di vertici $x,y$ qualora $p_{xy}>0$ e infine assegnando all'arco $(x,y)$ il peso
-			\begin{equation}
-			c_{xy}:=\pi(x)p_{xy}.
-			\end{equation}
-			Poiché la catena è reversibile, il peso è ben definito. Infatti $c_{xy} = \pi(x)p_{xy} = \pi(y)p_{yx} = c_{yx} $.
-	\end{frame}
-	\begin{frame}{Catene di Markov e Reti}
-	Precisiamo la seguente notazione:
-	\begin{enumerate}[label=-]
-	\item Useremo $\PP_x(\cdot)$ per indicare la probabilità condizionata $\PP(\cdot\mid X_0 =x)$.\\
-	\item Indicheremo il \textbf{tempo di visita} di un sottoinsieme di stati $A$ con
-	\[
-	\tau_A = \inf\Set{n\geq0\mid X_n \in A}.
-	\]
-	\item Infine, indicheremo con 
-	\[
-	\tau_A^+ = \inf\Set{n\geq1\mid X_n\in A}.
-	\]
-	\end{enumerate}
-	Se $X_0 \notin A$ allora $\tau_A^+ = \tau_A$ quasi certamente.\par
-	In modo colloquiale, se $X_0 \in A$ il tempo $\tau_A^+$ può essere inteso come ``tempo di ritorno''.
-	\end{frame}
-	
-	
-\section{Funzioni armoniche e Passeggiate aleatorie}
-	\begin{frame}{Funzioni armoniche e Passeggiate aleatorie}
-		\begin{block}{Definizione}
-		Una funzione $h:V \rightarrow \RR $ è \textbf{armonica} su un vertice $x\in V$ se
-		\begin{equation}
-			h(x) = \frac{1}{\pi(x)}\sum_{y:y \sim x} c_{xy}h(y).
-		\end{equation}
-		Se $h$ è armonica su ogni elemento di un insieme $W$, allora diremo che $h$ è armonica 				su $W$.
-	\end{block}
-		\begin{block}{Definizione}
-		Fissata una rete $G=(V,E)$ e due suoi vertici distinti $a,z \in V$, diremo \textbf{voltaggio} una funzione $g$ armonica su $V\setminus\set{a,z}$. Diremo che un voltaggio è unitario se $g(z) = 1$ e $g(a) = 0$.
-		\end{block}
-	\end{frame}
+% SLIDE 1
+\begin{frame}{Introduzione}
+\end{frame}
 
+% SLIDE 2
+\begin{frame}{Introduzione}
+\end{frame}
 
-	\begin{frame}{Funzioni armoniche e Passeggiate aleatorie}
-		\begin{alertblock}{Proposizione}
-				\label{claim:esistenza-rete-finita}
-				Data una rete finita $G=(V,E)$, fissati due vertici $a\neq z \in V$, la funzione \[
-				g(x) := \PP_x(\tau_z<\tau_a).
-				\]
-				è l'unico voltaggio unitario.
-		\end{alertblock}
-		\vspace{-.5cm}
-		\begin{figure}
-			\caption{Rete con pesi positivi sugli archi e valori del voltaggio unitario sui vertici $a$ e $z$.}
-		\end{figure}
-	\end{frame}
-	\section{Flussi e Correnti}
-	\begin{frame}{Flussi e Correnti}
-	Per un grafo $G=(V,E)$, denoteremo con $\Earr$ l'insieme di tutti archi orientati di $G$. In altre parole, $(x,y) \in \Earr$ se e solo se $\Set{x,y} \in E$ e in tal caso si ha anche che $(y,x)\in \Earr$.
-		\begin{block}{Definizione (Flusso)}
-			Un \textbf{flusso da $a$ a $z$} in una rete $G$ è una funzione $\theta:\Earr\rightarrow\RR$ che soddisfa:
-			\begin{enumerate}[label=(\roman*)]
-			\item per ogni $\Set{x,y}\in E$ si ha $\theta(xy) = - \theta(yx)$ (\textbf{antisimmetria}),
-			\item per ogni $x\notin \Set{a,z}$ si ha $\sum_{y:y\sim x} \theta(xy) = 0$ (\textbf{legge dei nodi di Kirchhoff}).
-			\end{enumerate}
-		\end{block}
-	\end{frame}
-	\begin{frame}{Flussi e Correnti}
+% SLIDE 3
+\begin{frame}{Introduzione}
+\end{frame}
 
-		\begin{block}{Definizione (Flusso associato ad un voltaggio)}
-			Dato un voltaggio $h$, il \textbf{flusso di corrente} $\theta = \theta_h$ associato ad $h$ è definito da 
-			\begin{equation}
-			\label{eq:legge-ohm}
-			\theta(xy) = c_{xy}(h(y)-h(x)).
-			\end{equation}
-		\end{block}
-		\vspace{-0.3cm}
-		\footnotesize La relazione (\ref{eq:legge-ohm}) è nota come \emph{legge di Ohm}: $V = R I$.
-		\normalsize
-			\begin{block}{Definizione (Corrente)}
-			La \textbf{corrente} di un flusso $\theta$ da $a$ a $z$ è definita come
-			\begin{equation}
-			\|\theta\| := \sum_{x:x\sim a} \theta(ax).
-			\end{equation}
-		\end{block}
-		\footnotesize{Si noti che la corrente di un flusso, benché rappresentata con una notazione di solito usata per le norme, non è in alcun modo una norma. Essa infatti può assumere valori negativi.}
-	\end{frame}
-	
-\section{Resistenza effettiva}
-	\begin{frame}{Resistenza effettiva}
-		\begin{alertblock}{Proposizione}
-			Fissata una rete $G=(V,E)$ e due suoi vertici $a,z$, per ogni voltaggio non costante $h$ e flusso di corrente $\theta$ ad esso associato, il rapporto
-			\[
-			\frac{h(z) - h(a)}{\|\theta\|}
-			\]
-			è una costante positiva che non dipende da $h$.
-		\end{alertblock}
-				\begin{block}{Definizione}
-			Fissata una rete $G$ e dato un voltaggio non costante e il flusso di corrente associato, diremo \textbf{resistenza effettiva} tra $a$ e $z$ il rapporto
-			\begin{equation}
-			\R_{\text{eff}}(a\leftrightarrow z; G) := \frac{h(z)-h(a)}{\|\theta\|}.
-			\end{equation}
-		\end{block}
-	\end{frame}
-	\begin{frame}{Resistenza effettiva}
-		\begin{alertblock}{Teorema}
-			Per ogni rete finita si ha:
-			\begin{equation}
-			\label{eq:resistenza-effettiva-passeggiate}
-			\R_{\text{eff}}(a\leftrightarrow z; G)=\frac{1}{\pi(a)\PP_a(\tau_z<\tau_a^+)}.
-			\end{equation}
-		\end{alertblock}
-		La dimostrazione si serve del voltaggio unitario $h(x) = \PP_x(\tau_z<\tau_a)$, della legge delle probabilità totali e in particolar modo della proprietà di Markov.
-	\end{frame}
-	\section{Energia e Principio di Thomson}
-	\begin{frame}{Energia e Principio di Thomson}
-	\begin{block}{Definizione}
-		L'\textbf{energia} di un flusso $\theta$ da $a$ a $z$, denotata con $\E(\theta)$ è così definita:
-		\[
-		\E(\theta):=\frac{1}{2}\sum_{\vec{e}\in\vec{E}}r_{\vec{e}}\theta(\vec{e})^2 = \sum_{e\in E} r_e\theta(e)^2.
-		\]
-	\end{block}
-	\vspace{-.45cm}
-	\footnotesize Si osservi che la seconda sommatoria avviene sull'insieme degli archi non orientati, ma dal momento che $\theta(xy)^2 = \theta(yx)^2$, la definizione è ben posta. Inoltre, l'energia è sempre maggiore o uguale a zero.
-	\normalsize
-	\begin{alertblock}{Teorema (Principio di Thomson)}
-	\label{principio}
-		Data una rete finita $G$ si ha
-		\[
-		\Reff{a}{z;G} = \inf\Set{\E(\theta) \mid \|\theta\| =1, \;\theta\text{ è un flusso da $a$ in $z$}},
-		\]
-		e l'unico elemento per il quale il minimo è raggiunto è il flusso di corrente unitaria.
-	\end{alertblock}
-	\end{frame}
-	\section{Grafi infiniti}
-	\begin{frame}{Grafi infiniti}
-		Sia $G=(V,E)$ un grafo connesso e infinito dotato di conduttanze $\{c_e\}_{e\in E}$. Assumeremo sempre che la rete sia \textbf{localmente finita} ovvero che per ogni vertice $x\in V$ si ha $\sum_{y:y\sim x} c_{xy} <\infty$. 
-		\begin{block}{Definizione}
-		Sia $\{G_n\}$ una successione di sottografi finiti e connessi di $G$ tale per cui $\bigcup_{n\in\NN}G_n=G$ e $G_n\subset G_{n+1}$; diremo che una tale successione è \textbf{esaustiva} di $G$. Inoltre, identificheremo tutti i vertici di $G\setminus G_n$ con un singolo vertice $z_n$.
-		\end{block}
+% SLIDE 4
+\begin{frame}{Introduzione}
+\end{frame}
 
-		\begin{alertblock}{Proposizione}
-			Data una successione esaustiva $\{G_n\}$ di $G$, il limite
-			\begin{equation}
-			\lim_{n\rightarrow\infty} \Reff{a}{z_n;G_n\cup\Set{z_n}} 
-			\end{equation}
-			esiste sempre e non dipende dalla scelta della successione esaustiva.
-		\end{alertblock}
-	\end{frame}
-	\begin{frame}{Grafi infiniti}
-		\begin{block}{Definizione}
-			In una rete infinita, la resistenza effettiva da un vertice $a$ a $\infty$ è
-			\[
-			\Reff{a}{\infty}:=	\lim_{n\rightarrow\infty} \Reff{a}{z_n;G_n\cup\Set{z_n}}.
-			\]
-		\end{block}
-		\begin{block}{Definizione}
-			Una rete $(G,\{r_e\}_{e\in E})$ è detta \textbf{ricorrente} se $\PP_a(\tau_a^+=\infty)=0$, ovvero se la probabilità che una passeggiata aleatoria che inizi in $a$ non torni mai in $a$ è zero. Altrimenti, la rete è detta \textbf{transiente}.
-		\end{block}
-		\vspace{-.3cm}
-		La relazione tra resistenza effettiva e catene di Markov (\ref{eq:resistenza-effettiva-passeggiate}) si estende ai grafi infiniti come segue:
-		\begin{equation}
-		\Reff{a}{\infty} = \frac{1}{\pi(a)\PP_a(\tau_a^+ = \infty)},
-		\end{equation}
-		con la convenzione che $1/0=\infty$.
-	\end{frame}
-	
-	\begin{frame}{Grafi infiniti}
-		\begin{alertblock}{Teorema (Principio di Thomson per reti infinite)}
-			Sia $G$ una rete infinita, allora
-			\[
-			\Reff{a}{\infty} = \inf\Set{\E(\theta)\mid\theta\text{ è un flusso da $a$ a $\infty$ di corrente unitaria}}.
-			\]
-		\end{alertblock}
+% SLIDE 5
+\begin{frame}{Introduzione}
+\end{frame}
 
-			\begin{alertblock}{Corollario}
-				Sia $G$ una rete infinita. Le seguenti affermazioni sono equivalenti:
-				\begin{enumerate}[label=(\roman*)]
-				\item $G$ è transiente.
-				\item Esiste un vertice $a\in V$ tale che $\Reff{a}{\infty}<\infty$. Di conseguenza, tutti i vertici soddisfano questa proprietà.
-				\item Esiste un vertice $a\in V$ e un flusso unitario $\theta$  da $a$ a $\infty$ con $\E(\theta) <\infty$. Di conseguenza, tutti i vertici soddisfano questa proprietà.
-			\end{enumerate}
-		\end{alertblock}
-	\end{frame}
-	\begin{frame}{Grafi infiniti}
-		\begin{block}{Definizione (Taglio)}
-			Un \textbf{taglio} $\Gamma \subseteq E(G)$ che separa $a$ da $z$ è un insieme di archi tale per cui ogni cammino da $a$ a $z$ possiede un arco in $\Gamma$. In una rete infinita $G=(V,E)$, diremo che $\Gamma\subset E$ è un taglio che separa $a$ da $\infty$ se ogni cammino semplice e infinito che inizi in $a$ possiede un arco in $\Gamma$.
-		\end{block}	
-	\end{frame}
-	\begin{frame}{Grafi infiniti}
-		\begin{alertblock}{Teorema (Disuguaglianza di Nash-Williams)}
-			Data una rete finita, siano $\{\Gamma_n\}$ tagli a due a due disgiunti che separano $a$ da $z$. Allora si ha
-			\begin{equation}
-			\Reff{a}{z}\geq\sum_{n}\left(\sum_{e\in\Gamma_n}c_e\right)^{-1}.
-			\end{equation}
-		\end{alertblock}
-		\begin{alertblock}{Corollario}
-			In una rete infinita, se esiste una collezione $\{\Gamma_n\}$ di tagli a due a due disgiunti che separato $a$ da $\infty$ tali per cui
-			\[
-			\sum_n\left(\sum_{e\in\Gamma_n}c_e\right)^{-1} = \infty
-			\]
-	allora la rete è ricorrente.
-		\end{alertblock}
-	\end{frame}
-	
-	\begin{frame}{Grafi infiniti: $\ZZ^2$}
-		\begin{alertblock}{Teorema}
-		$\ZZ^2$ dotato di pesi unitari è ricorrente
-		\end{alertblock}
-		\vspace{-.3cm}
-			\emph{Dimostrazione.} Definiamo $\Gamma_n$ come l'insieme degli archi $\{(x,y),(x,y+1)\}$ con $|x|\leq n$ e $\min\Set{|y|,|y+1|}=n$ e di quelli della forma $\{(x,y),(x+1,y)\}$ con $|y|\leq n$ e $\min\Set{|x|,|x+1|}=n$. Allora, $\{\Gamma_n\}_{n\geq1}$ è una collezione di tagli a due a due disgiunti che separano $0$ da $\infty$. Inoltre, $|\Gamma_n|=4(2n+1)$ e quindi \footnotesize$ \sum_n\left(\sum_{e\in\Gamma_n}c_e\right)^{-1} = \sum_n\frac{1}{|\Gamma_n|} = \infty$. \qed
-		\vspace{-.4cm}
-		\begin{figure}
-			\caption{Alcuni sottografi di $\ZZ^2$. Sono rappresentati i tagli $\Gamma_1$ e $\Gamma_3$ (in azzurro) e $\Gamma_2$ (in rosso). L'origine è cerchiata.}
-			\vspace{-.8cm}
-			\begin{minipage}[t][3cm][c]{0.3\textwidth}
-			\end{minipage}
-			\begin{minipage}[t][3cm][c]{0.3\textwidth}
-			\end{minipage}
-			\begin{minipage}[t][3cm][c]{0.3\textwidth}
-			\end{minipage}
-		\end{figure}
-	\end{frame}
-	
-	\begin{frame}{Grafi infiniti}
-	\begin{alertblock}{Proposizione}
-		Considerato un cammino $\gamma$ da $a$ in $z$, sia definito
-		\begin{align*}
-		\theta_\gamma(\vec{e}) = &~ (\text{numero di volte } \vec{e} \text{ è attraversato da } \gamma ) \\ 
-		& -(\text{numero di volte } \cev{e} \text{ è attraversato da } \gamma),
-		\end{align*}
-		dove $\vec{e},\cev{e}$ indicano i due orientamenti di un arco $e$ di $G$. Poniamo
-		\[
-		\theta(\vec{e}) = \EE(\theta_\gamma(\vec{e})).
-		\]
-		Allora $\theta$ è un flusso da $a$ in $z$ con $\|\theta\|=1$.
-	\end{alertblock}
-	\end{frame}
-	
-	\begin{frame}[allowframebreaks]{Grafi infiniti: $\ZZ^3$}
-	\vspace{.05cm}
-	\begin{alertblock}{Teorema}
-	$\ZZ^3$ dotato di pesi unitari è transiente.
-	\end{alertblock}
-	\emph{Dimostrazione.} Per $R>0$ denotiamo con $B_R = \Set{(x,y,z): x^2+y^2+z^2 \leq R^2}$ la palla di raggio $R$ in $\RR^3$. Posto $V_R = B_R \cap \ZZ^3$ e sia $\partial V_R$ l'insieme dei vertici esterni a $V_R$ e confinanti con $V_R$, ovvero l'insieme dei vertici non appartenenti a $V_R$ che sono estremi di archi il cui altro estremo è in $V_R$. \par
-	Costruiamo ora una passeggiata aleatoria $\gamma$ da $0$ a $\partial V_R$ scegliendo casualmente un punto $p$ in $\partial B_R = \Set{(x,y,z):x^2+y^2+z^2=R}$, tracciando una linea retta da $0$ a $p$ in $\RR^3$, considerando l'insieme di punti in $\RR^3$ distanti dalla linea retta al più $10$ e scegliendo in modo del tutto arbitrario un cammino in $\ZZ^3$ contenuto in quell'insieme. La costante $10$ è scelta arbitrariamente in modo da garantire l'esistenza di un cammino discreto per ogni punto $p\in\partial B_R$. \par
-	Per la Proposizione precedente la funzione $\theta(\vec{e}) = \EE(\theta_\gamma(\vec{e}))$ corrisponde ad un flusso da $0$ a $\partial V_R$, dove $\gamma$ sono i cammini costruiti come appena descritto. Per stimare l'energia di questo flusso, notiamo che se $\vec{e}$ è un arco distante $r\leq R$ dall'origine, allora la probabilità che sia attraversato da un cammino $\gamma$ è $O(r^{-2})$. Inoltre, ci sono $O(r^2)$ di questo tipo di archi. Quindi, l'energia di un flusso è al più
-	\begin{equation}
-	\E = O\left(\sum_{r=1}^Rr^2\cdot(r^{-2})^2\right)\leq C,
-	\end{equation}
-	per una qualche costante $C<\infty$ che non dipende da $R$. Per il Principio di Thomson deduciamo che $\Reff{0}{\partial V_R}\leq C$ per ogni $R$, e di conseguenza che $\ZZ^3$ è transiente. \qed
-	\end{frame}
-	\begin{frame}
-	\fontsize{12}{12} \scshape{Grazie dell'attenzione!}\vspace{.5cm}
-	\end{frame}
+% SLIDE 6
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 7
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 8
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 9
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 10
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 11
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 12
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 13
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 14
+\begin{frame}{Introduzione}
+\end{frame}
+
+% SLIDE 15
+\begin{frame}{Introduzione}
+\end{frame}
+
 \end{document}
