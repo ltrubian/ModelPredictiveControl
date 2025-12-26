@@ -1,5 +1,4 @@
 from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSim, AcadosSimSolver
-import casadi as ca
 import numpy as np
 from scipy.linalg import block_diag
 import matplotlib.pyplot as plt
@@ -196,7 +195,7 @@ def closed_loop_simulation(save_video=False):
 
     # create OCP solver
     ocp = create_ocp_solver_description(
-        model, N, T, x0, apply_state_constraints=False, integrator_type="a"
+        model, N, T, x0, apply_state_constraints=False, integrator_type="ERK"
     )
     acados_ocp_solver = AcadosOcpSolver(ocp, verbose=False)
 
