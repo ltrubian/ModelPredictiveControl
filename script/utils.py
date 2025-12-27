@@ -1,8 +1,11 @@
+from numpy.typing import NDArray
 from typing import Tuple
 import numpy as np
 
 
-def piecewise_constant(setpoints, setpoints_duration, Ts):
+def piecewise_constant(
+    setpoints: NDArray[np.float64], setpoints_duration: NDArray[np.float64], Ts: float
+) -> Tuple[NDArray, int]:
     """
     Defines the sampled version with sample time Ts of a piecewise constant reference,
 
@@ -36,8 +39,8 @@ def piecewise_constant(setpoints, setpoints_duration, Ts):
     return (ref, Tf)
 
 
-def compute_num_steps(ts_sim, Ts, Tf) -> Tuple[int, int, int]:
-    """
+def compute_num_steps(ts_sim: float, Ts: float, Tf: float) -> Tuple[int, int, int]:
+    """compute controller step and simulation for the loop dynamics
 
     Args:
         ts_sim: simulation time step
@@ -45,10 +48,11 @@ def compute_num_steps(ts_sim, Ts, Tf) -> Tuple[int, int, int]:
         Tf: final time instant
 
     Returns: (N_steps, N_steps_dt, n_update)
-        N_steps:
-        N_steps_dt:
-        n_update:
+        N_steps: number of simulation steps
+        N_steps_dt: number of steps for the discrete-time part of the loop
+        n_update: number of simulation steps
     """
+
     # check consistency
     if not (Ts / ts_sim).is_integer():
         raise ValueError(
