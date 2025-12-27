@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 
 
@@ -35,7 +36,19 @@ def piecewise_constant(setpoints, setpoints_duration, Ts):
     return (ref, Tf)
 
 
-def compute_num_steps(ts_sim, Ts, Tf):
+def compute_num_steps(ts_sim, Ts, Tf) -> Tuple[int, int, int]:
+    """
+
+    Args:
+        ts_sim: simulation time step
+        Ts: controller sample time
+        Tf: final time instant
+
+    Returns: (N_steps, N_steps_dt, n_update)
+        N_steps:
+        N_steps_dt:
+        n_update:
+    """
     # check consistency
     if not (Ts / ts_sim).is_integer():
         raise ValueError(
@@ -82,4 +95,3 @@ def get_nonuniform_grid(T, Ts, intermediate_nodes):
     shooting_nodes = uniform_grid[indices]
 
     return shooting_nodes
-
