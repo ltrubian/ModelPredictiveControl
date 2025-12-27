@@ -1,141 +1,25 @@
-from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSim, AcadosSimSolver
-import numpy as np
-from scipy.linalg import block_diag
 import matplotlib.pyplot as plt
+import numpy as np
+from acados_template import (
+    AcadosOcpSolver,
+    AcadosSim,
+    AcadosSimSolver,
+)
 from tqdm import tqdm
 
 from script.inverted_pendulum_model import get_inverted_pendulum_model
-from script.utils import piecewise_constant, compute_num_steps, get_nonuniform_grid
+from script.solvers_description import (
+    create_ocp_solver_description,
+    create_sim_solver_description,
+)
 from script.plot_utils import (
-    plot_results,
-    plot_pred_traj,
+    inverted_pendulum_animation,
     plot_cpt,
     plot_grid,
-    inverted_pendulum_animation,
+    plot_pred_traj,
+    plot_results,
 )
-from typing import Literal, get_args
-
-_INTEGRATOR_TYPE = Literal["ERK", "IRK"]
-
-
-def create_ocp_solver_description(
-    model,
-    N,
-    T,
-    x0,
-    Q=np.diag([10, 10, 0.1, 0.1]),  # state cost weigth matrices
-    R=0.01,  # input cost weigth matrices
-    shooting_nodes=None,
-    apply_state_constraints=False,
-    integrator_type: _INTEGRATOR_TYPE = "ERK",
-) -> AcadosOcp:
-    assert integrator_type in get_args(_INTEGRATOR_TYPE), (
-        f"{integrator_type = } not in {get_args(_INTEGRATOR_TYPE)}"
-    )
-    # create ocp object to formulate the OCP
-    ocp = AcadosOcp()
-
-    # define system dynamics model
-    ocp.model = model
-
-    # set prediction horizon:
-    # tf - prediction horizon length [s]
-    # N  - number of intervals in which the prediction horizon is divided
-    ocp.solver_options.tf = T
-    ocp.solver_options.N_horizon = N
-
-    # NOTE: on older acados versions, use instead
-    # ocp.dims.N = N
-
-    # set shooting nodes, if provided
-    # (otherwise set automatically assuming uniform grid)
-    if shooting_nodes is not None:
-        ocp.solver_options.shooting_nodes = shooting_nodes
-
-    # get state, control and cost dimensions
-    nx = model.x.rows()
-    nu = model.u.rows()
-
-    ny = nx + nu
-    ny_e = nx
-
-    # define cost type
-    ocp.cost.cost_type = "LINEAR_LS"
-    ocp.cost.cost_type_e = "LINEAR_LS"
-
-    ocp.cost.W = block_diag(Q, R)
-    ocp.cost.W_e = T / N * Q
-
-    # define matrices characterizing the cost
-    ocp.cost.Vx = np.vstack((np.eye(nx), np.zeros((nu, nx))))
-    ocp.cost.Vu = np.vstack((np.zeros((nx, nu)), np.eye(nu)))
-    ocp.cost.Vx_e = np.eye(nx)
-
-    # alternatively, for the NONLINEAR_LS cost type
-    # ocp.model.cost_y_expr = ca.vertcat(model.x, model.u)
-    # ocp.model.cost_y_expr_e = model.x
-
-    # initialize variables for reference
-    ocp.cost.yref = np.zeros((ny,))
-    ocp.cost.yref_e = np.zeros((ny_e,))
-
-    # bounds on control input
-    ocp.constraints.lbu = np.array([-20])
-    ocp.constraints.ubu = np.array([20])
-    ocp.constraints.idxbu = np.array([0])
-
-    # if specified, apply the bounds on position with slack variables
-    if apply_state_constraints:
-        # bounds on position (0 component of state vector)
-        ocp.constraints.idxbx = np.array([0])
-        ocp.constraints.lbx = np.array([-1])
-        ocp.constraints.ubx = np.array([1])
-
-        # bounds on terminal state x_N
-        ocp.constraints.idxbx_e = np.array([0])
-        ocp.constraints.lbx_e = np.array([-1])
-        ocp.constraints.ubx_e = np.array([1])
-
-        # indices among the bounds on state for which use a slack variable
-        ocp.constraints.idxsbx = np.array([0])
-        ocp.constraints.idxsbx_e = np.array([0])
-
-        # define weight on slack variables
-        ocp.cost.Zl = np.array([1e4])
-        ocp.cost.Zl_e = np.array([1e4])
-        ocp.cost.Zu = np.array([1e4])
-        ocp.cost.Zu_e = np.array([1e4])
-
-        ocp.cost.zl = np.array([1e3])
-        ocp.cost.zl_e = np.array([1e3])
-        ocp.cost.zu = np.array([1e3])
-        ocp.cost.zu_e = np.array([1e3])
-
-    # initialize constraint on initial condition
-    ocp.constraints.x0 = x0
-
-    # set solver options
-    ocp.solver_options.qp_solver = (
-        "PARTIAL_CONDENSING_HPIPM"  # FULL_CONDENSING_QPOASES, PARTIAL_CONDENSING_HPIPM
-    )
-    ocp.solver_options.hessian_approx = "GAUSS_NEWTON"
-    ocp.solver_options.integrator_type = integrator_type  # ERK, IRK
-    ocp.solver_options.nlp_solver_type = "SQP"  # SQP, SQP_RTI
-
-    # to configure partial condensing
-    # ocp.solver_options.qp_solver_cond_N = int(N/10)
-
-    # some more advanced settings (refer to the documentation to see them all)
-    # - maximum number of SQP iterations (default: 100)
-    ocp.solver_options.nlp_solver_max_iter = 100
-    # - maximum number of iterations for the QP solver (default: 50)
-    ocp.solver_options.qp_solver_iter_max = 50
-
-    # - configure warm start of the QP solver (0: no, 1: warm start, 2: hot start)
-    # (depends on the specific solver)
-    ocp.solver_options.qp_solver_warm_start = 0
-
-    return ocp
+from script.utils import compute_num_steps, get_nonuniform_grid, piecewise_constant
 
 
 def closed_loop_simulation(save_video=False):
@@ -144,7 +28,6 @@ def closed_loop_simulation(save_video=False):
 
     # model used to simulate the system
     sim_model = get_inverted_pendulum_model(l=0.8)
-    sim_model.name = "sim_model"
 
     # initial condition
     x0 = np.array([0, np.pi, 0, 0])
@@ -185,13 +68,9 @@ def closed_loop_simulation(save_video=False):
     shifting = False
     ref_preview = False
 
-    # setup simulation of system dynamics
-    sim = AcadosSim()
-    sim.model = sim_model
-    sim.solver_options.T = ts_sim
-    sim.solver_options.integrator_type = "ERK"
-
-    acados_integrator = AcadosSimSolver(sim, verbose=False)
+    acados_integrator = AcadosSimSolver(
+        create_sim_solver_description(sim_model, ts_sim), verbose=False
+    )
 
     # create OCP solver
     ocp = create_ocp_solver_description(

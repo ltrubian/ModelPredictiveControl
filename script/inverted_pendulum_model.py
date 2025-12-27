@@ -16,6 +16,7 @@ def get_inverted_pendulum_model(
     # M - cart mass [kg]
     # m - pendulum mass [kg]
     # l - pendulum length [m]
+    # k - spring elastic constant [N/m]
 
     # setup states and controls symbolic variables
     p = ca.SX.sym("p", 1, 1)
