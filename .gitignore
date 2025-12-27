@@ -221,3 +221,4 @@ acados*.json
 *.fls
 *.fdb_latexmk
 **/tex/*.pdf
+*.mp4
