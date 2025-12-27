@@ -25,14 +25,14 @@ def closed_loop_simulation(save_video=False):
     ts_sim = 0.001
 
     # model used to simulate the system
-    sim_model = get_inverted_pendulum_model(l=0.8)
+    sim_model = get_inverted_pendulum_model()
 
     # initial condition
-    x0 = np.array([0, np.pi, 0, 0])
+    x0 = np.array([0, np.pi, 0, 0, 0])
 
     # setup controller parameters
     # - system model
-    model = get_inverted_pendulum_model()
+    model = get_inverted_pendulum_model(type="extended")
     # - controller sample time [s]
     Ts = 0.02
     # - number of shooting time intervals
@@ -72,7 +72,13 @@ def closed_loop_simulation(save_video=False):
 
     # create OCP solver
     ocp = create_ocp_solver_description(
-        model, N, T, x0, apply_state_constraints=False, integrator_type="ERK"
+        model,
+        N,
+        T,
+        x0,
+        apply_state_constraints=False,
+        integrator_type="ERK",
+        Q=np.diag([10, 10, 0.1, 0.1, 5]),
     )
     acados_ocp_solver = AcadosOcpSolver(ocp, verbose=False)
 
@@ -102,6 +108,7 @@ def closed_loop_simulation(save_video=False):
     # variable to store solver status
     status = np.zeros((N_steps_dt,))
 
+    u_next: float = x0[4]
     # simulation loop
     for i in tqdm(
         range(N_steps), desc="Simulation", ascii=False, ncols=75, colour="green"
@@ -146,11 +153,15 @@ def closed_loop_simulation(save_video=False):
 
             x_opt[N, :, k] = acados_ocp_solver.get(N, "x")
 
+            u_curr = u_next
+            u_next = simX[i, 4] + Ts * simU[k]
+
             # update discrete-time iteration counter
             k += 1
 
         # simulate system
-        simX[i + 1, :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
+        simX[i + 1, 0:-1] = acados_integrator.simulate(simX[i, 0:-1], u_curr)
+        simX[i + 1, 4:] = u_curr
 
     # visualize results
     print("Average total CPU time: " + str(np.mean(cpt) * 1000) + " ms")
@@ -191,4 +202,4 @@ def closed_loop_simulation(save_video=False):
 
 
 if __name__ == "__main__":
-    closed_loop_simulation()
+    closed_loop_simulation(save_video=True)
