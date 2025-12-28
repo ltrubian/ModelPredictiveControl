@@ -78,7 +78,7 @@ def closed_loop_simulation(save_video=False):
         x0,
         apply_state_constraints=True,
         integrator_type="ERK",
-        Q=np.diag([10, 10, 0.1, 0.1, 0.1]),
+        Q=np.diag([10, 10, 0.1, 0.1, 0.01]),
     )
     acados_ocp_solver = AcadosOcpSolver(ocp, verbose=False)
 
@@ -95,6 +95,7 @@ def closed_loop_simulation(save_video=False):
     # create variables to store state and control trajectories
     simX = np.zeros((N_steps + 1, nx))
     simU = np.zeros((N_steps_dt, nu))
+    tmpU = np.zeros((N_steps_dt, nu))
     # set intial state
     simX[0, :] = x0
 
@@ -154,13 +155,14 @@ def closed_loop_simulation(save_video=False):
             x_opt[N, :, k] = acados_ocp_solver.get(N, "x")
 
             u_curr = u_next
-            u_next = simX[i, 4] + Ts * simU[k]
+            u_next = u_curr + Ts * simU[k, :]
+            tmpU[k, :] = u_curr
 
             # update discrete-time iteration counter
             k += 1
 
         # simulate system
-        simX[i + 1, 0:-1] = acados_integrator.simulate(simX[i, 0:-1], u_curr)
+        simX[i + 1, 0:4] = acados_integrator.simulate(simX[i, 0:4], u_curr)
         simX[i + 1, 4:] = u_curr
 
     # visualize results
@@ -179,7 +181,7 @@ def closed_loop_simulation(save_video=False):
             )
 
     try:
-        plot_results(time, time_dt, simX, simU, y_ref)
+        plot_results(time, time_dt, simX, tmpU, y_ref)
         plot_cpt(time_dt, cpt, Ts)
 
         plot_pred_traj(

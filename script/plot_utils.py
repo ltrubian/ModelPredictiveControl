@@ -32,8 +32,9 @@ def plot_results(time, time_dt, state, control, ref):
 
     # - plot cart velocity
     plt.subplot(2, 2, 3)
-    plt.plot(time, state[:, 2])
-    plt.plot(time_dt, ref[: len(time_dt), 2])
+    plt.plot(time, state[:, 4])
+    plt.plot(time_dt, ref[: len(time_dt), 4])
+    plt.title("force")
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
