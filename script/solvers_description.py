@@ -92,9 +92,9 @@ def create_ocp_solver_description(
     ocp.cost.yref_e = np.zeros((ny_e,))
 
     # bounds on control input
-    # ocp.constraints.lbu = np.array([-20])
-    # ocp.constraints.ubu = np.array([20])
-    # ocp.constraints.idxbu = np.array([0])
+    ocp.constraints.lbu = np.array([-20])
+    ocp.constraints.ubu = np.array([20])
+    ocp.constraints.idxbu = np.array([0])
 
     # if specified, apply the bounds on position with slack variables
     if apply_state_constraints:
@@ -109,8 +109,8 @@ def create_ocp_solver_description(
         ocp.constraints.ubx_e = np.array([20])
 
         # indices among the bounds on state for which use a slack variable
-        ocp.constraints.idxsbx = np.array([4])
-        ocp.constraints.idxsbx_e = np.array([4])
+        ocp.constraints.idxsbx = np.array([0])
+        ocp.constraints.idxsbx_e = np.array([0])
 
         # define weight on slack variables
         ocp.cost.Zl = np.array([1e4])
