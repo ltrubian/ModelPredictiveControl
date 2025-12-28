@@ -63,8 +63,8 @@ def closed_loop_simulation(save_video=False):
     N_steps, N_steps_dt, n_update = compute_num_steps(ts_sim, Ts, Tf)
 
     # configure whether to apply shifting and to enable reference look-ahead
-    shifting = False
-    ref_preview = False
+    shifting: bool = False
+    ref_preview: bool = False
 
     acados_integrator = AcadosSimSolver(
         create_sim_solver_description(sim_model, ts_sim), verbose=False
@@ -76,9 +76,9 @@ def closed_loop_simulation(save_video=False):
         N,
         T,
         x0,
-        apply_state_constraints=False,
+        apply_state_constraints=True,
         integrator_type="ERK",
-        Q=np.diag([10, 10, 0.1, 0.1, 5]),
+        Q=np.diag([10, 10, 0.1, 0.1, 0.1]),
     )
     acados_ocp_solver = AcadosOcpSolver(ocp, verbose=False)
 
@@ -179,7 +179,7 @@ def closed_loop_simulation(save_video=False):
             )
 
     try:
-        plot_results(time, time_dt, simX, simU)
+        plot_results(time, time_dt, simX, simU, y_ref)
         plot_cpt(time_dt, cpt, Ts)
 
         plot_pred_traj(
@@ -202,4 +202,4 @@ def closed_loop_simulation(save_video=False):
 
 
 if __name__ == "__main__":
-    closed_loop_simulation(save_video=True)
+    closed_loop_simulation(save_video=False)
