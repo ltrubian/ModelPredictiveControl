@@ -8,7 +8,7 @@ from matplotlib.patches import Circle
 from tqdm import tqdm
 
 
-def plot_results(time, time_dt, state, control):
+def plot_results(time, time_dt, state, control, ref):
     # latexify_plot()
 
     # plot state
@@ -17,6 +17,7 @@ def plot_results(time, time_dt, state, control):
     # - plot cart position
     plt.subplot(2, 2, 1)
     plt.plot(time, state[:, 0])
+    plt.plot(time_dt, ref[: len(time_dt), 0])
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$p$ [m]")
     plt.grid(True)
@@ -24,6 +25,7 @@ def plot_results(time, time_dt, state, control):
     # - plot pendulum angle
     plt.subplot(2, 2, 2)
     plt.plot(time, np.rad2deg(state[:, 1]))
+    plt.plot(time_dt, np.rad2deg(ref[: len(time_dt), 1]))
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\theta$ [deg]")
     plt.gca().grid(True)
@@ -31,6 +33,7 @@ def plot_results(time, time_dt, state, control):
     # - plot cart velocity
     plt.subplot(2, 2, 3)
     plt.plot(time, state[:, 2])
+    plt.plot(time_dt, ref[: len(time_dt), 2])
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
@@ -38,6 +41,7 @@ def plot_results(time, time_dt, state, control):
     # - plot pendulum angular velocity
     plt.subplot(2, 2, 4)
     plt.plot(time, np.rad2deg(state[:, 3]))
+    plt.plot(time_dt, ref[: len(time_dt), 3])
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\omega$ [deg/s]")
     plt.grid(True)
@@ -222,4 +226,3 @@ def inverted_pendulum_animation(p, theta, ts, filename=None):
             animation_writer.grab_frame()
 
     plt.close(fig)
-
