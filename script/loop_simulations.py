@@ -208,28 +208,31 @@ def closed_loop_simulation_extended(
 def closed_loop_simulation(
     shifting: bool = False,
     ref_preview: bool = False,
-    save_video=False,
+    save_video: bool = False,
+    ctrl_on: bool = True,
     Q=np.diag([10, 10, 0.1, 0.1]),
     R=0.01,
     ini_type: _INITIAL_TYPE = "down",
     ref_type: _REFERENCE_TYPE = "swing-up",
-    mod_type: _MODEL_TYPE = "non-linear",
+    mod_type_sim: _MODEL_TYPE = "non-linear",
+    mod_type_ocp: _MODEL_TYPE = "non-linear",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
 ):
-    if mod_type == "extended":
+    if mod_type_sim == "extended" or mod_type_ocp == "extended":
         raise ValueError(
-            f"this function does NOT work with {mod_type = }. See instead closed_loop_simulation_extended"
+            """this function does NOT work with mod_type_[sim/ocp] == "extended". """
+            """See instead closed_loop_simulation_extended"""
         )
 
     # define simulation fundamental time step [s]
     ts_sim = 0.001
 
     # model used to simulate the system
-    sim_model = get_inverted_pendulum_model()
+    sim_model = get_inverted_pendulum_model(type=mod_type_sim)
 
     # setup controller parameters
-    model = get_inverted_pendulum_model(type=mod_type)
+    model = get_inverted_pendulum_model(type=mod_type_ocp)
     # - controller sample time [s]
     Ts = 0.02
     # - number of shooting time intervals
@@ -321,10 +324,13 @@ def closed_loop_simulation(
 
                 acados_ocp_solver.set(N, "x", x_opt[N, :, k - 1])
 
-            # update the control
-            simU[k, :] = acados_ocp_solver.solve_for_x0(
-                simX[i, :], fail_on_nonzero_status=False, print_stats_on_failure=False
-            )
+            if ctrl_on:
+                # update the control
+                simU[k, :] = acados_ocp_solver.solve_for_x0(
+                    simX[i, :],
+                    fail_on_nonzero_status=False,
+                    print_stats_on_failure=False,
+                )
 
             # store CPU time required for solving the problem
             cpt[k] = acados_ocp_solver.get_stats("time_tot")
@@ -364,15 +370,16 @@ def closed_loop_simulation(
         plot_results(time, time_dt, simX, simU, y_ref)
         plot_cpt(time_dt, cpt, Ts)
 
-        plot_pred_traj(
-            time,
-            time_dt,
-            simX,
-            simU,
-            x_opt,
-            u_opt,
-            np.argwhere(np.round(time_dt, 3) == 5),
-        )
+        if ctrl_on:
+            plot_pred_traj(
+                time,
+                time_dt,
+                simX,
+                simU,
+                x_opt,
+                u_opt,
+                np.argwhere(np.round(time_dt, 3) == 5),
+            )
 
         if save_video:
             inverted_pendulum_animation(simX[:, 0], simX[:, 1], ts_sim)
