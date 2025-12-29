@@ -10,6 +10,7 @@ from numpy.typing import NDArray
 from scipy.linalg import block_diag
 
 _INTEGRATOR_TYPE = Literal["ERK", "IRK"]
+_CONSTRAINTS = Literal["input-U", "state-F"]
 
 
 def create_ocp_solver_description(
@@ -20,7 +21,7 @@ def create_ocp_solver_description(
     Q: NDArray[np.float64] = np.diag([10, 10, 0.1, 0.1]),
     R: float = 0.01,
     shooting_nodes: Optional[NDArray[np.float64]] = None,
-    apply_state_constraints: bool = False,
+    constraints: _CONSTRAINTS = "input-U",
     integrator_type: _INTEGRATOR_TYPE = "ERK",
 ) -> AcadosOcp:
     """create optimal control problem description
@@ -33,7 +34,7 @@ def create_ocp_solver_description(
         Q: state cost weight matrix
         R: input cost weight
         shooting_nodes:
-        apply_state_constraints:
+        constraints: (input-U/state-F) constraints on extended state or input
         integrator_type: numerical integrator type (Explicit/Implicit Runge-Kutta)
 
     Returns:
@@ -91,37 +92,25 @@ def create_ocp_solver_description(
     ocp.cost.yref = np.zeros((ny,))
     ocp.cost.yref_e = np.zeros((ny_e,))
 
-    # bounds on control input
-    # ocp.constraints.lbu = np.array([-20])
-    # ocp.constraints.ubu = np.array([20])
-    # ocp.constraints.idxbu = np.array([0])
+    match constraints:
+        case "input-U":
+            # bounds on control input
+            ocp.constraints.lbu = np.array([-20])
+            ocp.constraints.ubu = np.array([20])
+            ocp.constraints.idxbu = np.array([0])
 
-    # if specified, apply the bounds on position with slack variables
-    if apply_state_constraints:
-        # bounds on position (0 component of state vector)
-        ocp.constraints.idxbx = np.array([4])
-        ocp.constraints.lbx = np.array([-20])
-        ocp.constraints.ubx = np.array([20])
+        case "state-F":
+            # bounds on position (0 component of state vector)
+            ocp.constraints.idxbx = np.array([4])
+            ocp.constraints.lbx = np.array([-20])
+            ocp.constraints.ubx = np.array([20])
 
-        # bounds on terminal state x_N
-        ocp.constraints.idxbx_e = np.array([4])
-        ocp.constraints.lbx_e = np.array([-20])
-        ocp.constraints.ubx_e = np.array([20])
-
-        # indices among the bounds on state for which use a slack variable
-        ocp.constraints.idxsbx = np.array([0])
-        ocp.constraints.idxsbx_e = np.array([0])
-
-        # define weight on slack variables
-        ocp.cost.Zl = np.array([1e4])
-        ocp.cost.Zl_e = np.array([1e4])
-        ocp.cost.Zu = np.array([1e4])
-        ocp.cost.Zu_e = np.array([1e4])
-
-        ocp.cost.zl = np.array([1e3])
-        ocp.cost.zl_e = np.array([1e3])
-        ocp.cost.zu = np.array([1e3])
-        ocp.cost.zu_e = np.array([1e3])
+            # bounds on terminal state x_N
+            ocp.constraints.idxbx_e = np.array([4])
+            ocp.constraints.lbx_e = np.array([-20])
+            ocp.constraints.ubx_e = np.array([20])
+        case _:
+            raise ValueError(f"{constraints = } is not in {get_args(_CONSTRAINTS)}")
 
     # initialize constraint on initial condition
     ocp.constraints.x0 = x0

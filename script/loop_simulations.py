@@ -72,7 +72,7 @@ def closed_loop_simulation(
         N,
         T,
         x0,
-        apply_state_constraints=True,
+        constraints="state-F",
         integrator_type="ERK",
         Q=Q,
         R=R,
