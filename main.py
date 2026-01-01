@@ -35,18 +35,19 @@ EXPER: list = [
             "ctrl_on": False,
             "mod_type_sim": "non-linear",
             "ref_type": "empty-2s",
+            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
         },
         "specific": [
-            {"t_sim": 1e-5, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-4, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-3, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-2, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-1, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-5, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-4, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-3, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-2, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-1, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-5, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-4, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-3, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-2, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-1, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-5, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-4, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-3, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-2, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-1, "integ_type_sim": "IRK"},
         ],
     },
     {
@@ -57,18 +58,19 @@ EXPER: list = [
             "ctrl_on": False,
             "mod_type_sim": "spring",
             "ref_type": "empty-2s",
+            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
         },
         "specific": [
-            {"t_sim": 1e-5, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-4, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-3, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-2, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-1, "integ_type_sim": "ERK"},
-            {"t_sim": 1e-5, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-4, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-3, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-2, "integ_type_sim": "IRK"},
-            {"t_sim": 1e-1, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-5, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-4, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-3, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-2, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-1, "integ_type_sim": "ERK"},
+            {"ts_sim": 1e-5, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-4, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-3, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-2, "integ_type_sim": "IRK"},
+            {"ts_sim": 1e-1, "integ_type_sim": "IRK"},
         ],
     },
     {
@@ -76,21 +78,39 @@ EXPER: list = [
         "function": "closed_loop_simulation",
         "common": {"ini_type": "down", "ref_type": "swing-up", "Ts": 0.1, "N": 20},
         "specific": [
-            {"integ_type_ocp": "IRK"},
             {"integ_type_ocp": "ERK"},
+            {"integ_type_ocp": "IRK"},
+        ],
+    },
+    {
+        "simulation": "task 3, NMPC vs linear MPC",
+        "function": "closed_loop_simulation",
+        "common": {"ini_type": "up", "ref_type": "horizontal"},
+        "specific": [
+            {"mod_type_ocp": "linear"},
+            {"mod_type_ocp": "non-linear"},
+        ],
+    },
+    {
+        "simulation": "task 3, swing-up maneuver with linear MPC",
+        "function": "closed_loop_simulation",
+        "common": {"ini_type": "down", "ref_type": "swing-up"},
+        "specific": [
+            {"mod_type_ocp": "linear"},
+            {"mod_type_ocp": "non-linear"},
         ],
     },
 ]
 
 if __name__ == "__main__":
     SUMMARY: list = [
-        f""" {x}) {EXPER[x]["simulation"]} cases [0-{len(EXPER[x]["specific"])}]"""
+        f""" -s {x} -c [0-{len(EXPER[x]["specific"]) - 1}] {EXPER[x]["simulation"]} """
         for x in range(len(EXPER))
     ]
     parser = argparse.ArgumentParser(
-        prog="Interted pendulum, simulation and control",
-        description="""It runs simulaitn of inverted pendulum in some predefined and testes scenarios""",
+        description="""It runs simulaitn of inverted pendulum in some predefined and tested scenarios""",
         epilog="\n".join(SUMMARY),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "-s", "--simulation", type=int, default=0, help="select simulation case"
@@ -106,6 +126,10 @@ if __name__ == "__main__":
 
     TASK: int = args_parsed.simulation
     EX: int = args_parsed.case
+
+    if not (0 <= TASK < len(EXPER)) or not (0 <= EX < len(EXPER[TASK]["specific"])):
+        raise ValueError("check --help for valid indexes of simulations and cases")
+
     curr_exp = EXPER[TASK]
     args = curr_exp["common"] | curr_exp["specific"][EX]
 

@@ -4,9 +4,10 @@ from acados_template import (
     AcadosOcpSolver,
     AcadosSimSolver,
 )
+from numpy.typing import NDArray
 from tqdm import tqdm
 
-from script.inverted_pendulum_model import get_inverted_pendulum_model, _MODEL_TYPE
+from script.inverted_pendulum_model import _MODEL_TYPE, get_inverted_pendulum_model
 from script.plot_utils import (
     inverted_pendulum_animation,
     plot_cpt,
@@ -14,15 +15,15 @@ from script.plot_utils import (
     plot_results,
 )
 from script.simulation_cases import (
-    get_initial_condition,
-    get_reference,
     _INITIAL_TYPE,
     _REFERENCE_TYPE,
+    get_initial_condition,
+    get_reference,
 )
 from script.solvers_description import (
+    _INTEGRATOR_TYPE,
     create_ocp_solver_description,
     create_sim_solver_description,
-    _INTEGRATOR_TYPE,
 )
 from script.utils import compute_num_steps
 
@@ -31,13 +32,19 @@ def closed_loop_simulation_extended(
     shifting: bool = False,
     ref_preview: bool = False,
     save_video=False,
-    Q=np.diag([10, 10, 0.1, 0.1, 0.01]),
-    R=0.01,
+    Q: NDArray = np.diag([10, 10, 0.1, 0.1, 0.01]),
+    R: float = 0.01,
     ini_type: _INITIAL_TYPE = "down",
     ref_type: _REFERENCE_TYPE = "swing-up",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
 ):
+    """Runs a closede loop simulatoin with the 'extended' controller.
+
+    Args:
+
+    """
+
     # define simulation fundamental time step [s]
     ts_sim = 0.001
 
@@ -101,6 +108,8 @@ def closed_loop_simulation_extended(
     deltaU = np.zeros((N_steps_dt, nu))
     # set intial state
     simX[0, :] = x0
+    # set initial input, PURE EXTENDED
+    simU[0, :] = x0[4:]
 
     # create variables to store, at each iteration, previous optimal solution
     x_opt = np.zeros((N + 1, nx, N_steps_dt))
@@ -112,7 +121,6 @@ def closed_loop_simulation_extended(
     # variable to store solver status
     status = np.zeros((N_steps_dt,))
 
-    simU[0, :] = x0[4:]
     # simulation loop
     for i in tqdm(
         range(N_steps), desc="Simulation", ascii=False, ncols=75, colour="green"
@@ -157,7 +165,7 @@ def closed_loop_simulation_extended(
 
             x_opt[N, :, k] = acados_ocp_solver.get(N, "x")
 
-            # update next input via integration
+            # update next input via integration, PURE EXTENDED
             simU[k + 1, :] = simU[k, :] + Ts * deltaU[k, :]
 
             # update discrete-time iteration counter
@@ -165,6 +173,7 @@ def closed_loop_simulation_extended(
 
         # simulate system
         simX[i + 1, 0:4] = acados_integrator.simulate(simX[i, 0:4], simU[k - 1, :])
+        # unpdate the state with the actual input, PURE EXTENDED
         simX[i + 1, 4:] = simU[k - 1, :]
 
     # visualize results
@@ -183,6 +192,7 @@ def closed_loop_simulation_extended(
             )
 
     try:
+        # cut last unused input, PURE EXTENDED
         plot_results(time, time_dt, simX, simU[:-1, :], y_ref)
         plot_cpt(time_dt, cpt, Ts)
 
@@ -210,14 +220,14 @@ def closed_loop_simulation(
     ref_preview: bool = False,
     save_video: bool = False,
     ctrl_on: bool = True,
+    ts_sim: float = 0.001,
     # - controller sample time [s]
-    Ts=0.02,
+    Ts: float = 0.02,
     # - number of shooting time intervals
-    N=100,
+    N: int = 100,
     # define simulation fundamental time step [s]
-    ts_sim=0.001,
-    Q=np.diag([10, 10, 0.1, 0.1]),
-    R=0.01,
+    Q: NDArray = np.diag([10, 10, 0.1, 0.1]),
+    R: float = 0.01,
     ini_type: _INITIAL_TYPE = "down",
     ref_type: _REFERENCE_TYPE = "swing-up",
     mod_type_sim: _MODEL_TYPE = "non-linear",
@@ -301,7 +311,7 @@ def closed_loop_simulation(
         range(N_steps), desc="Simulation", ascii=False, ncols=75, colour="green"
     ):
         # check whether to update the discrete-time part of the loop
-        if i % n_update == 0:
+        if i % n_update == 0 and ctrl_on:
             # update reference
             for j in range(N):
                 acados_ocp_solver.set(
@@ -322,13 +332,12 @@ def closed_loop_simulation(
 
                 acados_ocp_solver.set(N, "x", x_opt[N, :, k - 1])
 
-            if ctrl_on:
                 # update the control
-                simU[k, :] = acados_ocp_solver.solve_for_x0(
-                    simX[i, :],
-                    fail_on_nonzero_status=False,
-                    print_stats_on_failure=False,
-                )
+            simU[k, :] = acados_ocp_solver.solve_for_x0(
+                simX[i, :],
+                fail_on_nonzero_status=False,
+                print_stats_on_failure=False,
+            )
 
             # store CPU time required for solving the problem
             cpt[k] = acados_ocp_solver.get_stats("time_tot")

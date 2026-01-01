@@ -54,23 +54,23 @@ def compute_num_steps(ts_sim: float, Ts: float, Tf: float) -> Tuple[int, int, in
     """
 
     # check consistency
-    if not (Ts / ts_sim).is_integer():
+    if not round(Ts / ts_sim, 4).is_integer():
         raise ValueError(
             "The sample time Ts has to be an integer multiple of the simulation time step ts_sim"
         )
-    if not (Tf / ts_sim).is_integer():
+    if not round(Tf / ts_sim, 4).is_integer():
         raise ValueError(
             "The simulation time Tf has to be an integer multiple of the simulation time step ts_sim"
         )
 
     # compute the number of simulation steps
-    N_steps = int(Tf / ts_sim)
+    N_steps = int(round(Tf / ts_sim, 4))
 
     # compute the number of steps for the discrete-time part of the loop
-    N_steps_dt = int(Tf / Ts)
+    N_steps_dt = int(round(Tf / Ts, 4))
 
     # number of simulation steps every which to update the discrete-time part of the loop
-    n_update = int(Ts / ts_sim)
+    n_update = int(round(Ts / ts_sim, 4))
 
     return (N_steps, N_steps_dt, n_update)
 
