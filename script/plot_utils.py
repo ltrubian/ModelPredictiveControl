@@ -8,7 +8,7 @@ from matplotlib.patches import Circle
 from tqdm import tqdm
 
 
-def plot_results(time, time_dt, state, control, ref):
+def plot_results(time, time_dt, state, control, ref, ctrl_on=True):
     # latexify_plot()
 
     # plot state
@@ -17,7 +17,8 @@ def plot_results(time, time_dt, state, control, ref):
     # - plot cart position
     plt.subplot(2, 2, 1)
     plt.plot(time, state[:, 0])
-    plt.plot(time_dt, ref[: len(time_dt), 0])
+    if ctrl_on:
+        plt.plot(time_dt, ref[: len(time_dt), 0])
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$p$ [m]")
     plt.grid(True)
@@ -25,7 +26,8 @@ def plot_results(time, time_dt, state, control, ref):
     # - plot pendulum angle
     plt.subplot(2, 2, 2)
     plt.plot(time, np.rad2deg(state[:, 1]))
-    plt.plot(time_dt, np.rad2deg(ref[: len(time_dt), 1]))
+    if ctrl_on:
+        plt.plot(time_dt, np.rad2deg(ref[: len(time_dt), 1]))
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\theta$ [deg]")
     plt.gca().grid(True)
@@ -33,7 +35,8 @@ def plot_results(time, time_dt, state, control, ref):
     # - plot cart velocity
     plt.subplot(2, 2, 3)
     plt.plot(time, state[:, 2])
-    plt.plot(time_dt, ref[: len(time_dt), 2])
+    if ctrl_on:
+        plt.plot(time_dt, ref[: len(time_dt), 2])
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
@@ -41,19 +44,21 @@ def plot_results(time, time_dt, state, control, ref):
     # - plot pendulum angular velocity
     plt.subplot(2, 2, 4)
     plt.plot(time, np.rad2deg(state[:, 3]))
-    plt.plot(time_dt, ref[: len(time_dt), 3])
+    if ctrl_on:
+        plt.plot(time_dt, ref[: len(time_dt), 3])
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\omega$ [deg/s]")
     plt.grid(True)
 
     plt.tight_layout()
 
-    # plot control input
-    plt.figure()
-    plt.step(time_dt, np.append(control, control[-1]), where="post")
-    plt.gca().set_xlabel("time [s]")
-    plt.gca().set_ylabel("$F$ [N]")
-    plt.grid(True)
+    if ctrl_on:
+        # plot control input
+        plt.figure()
+        plt.step(time_dt, np.append(control, control[-1]), where="post")
+        plt.gca().set_xlabel("time [s]")
+        plt.gca().set_ylabel("$F$ [N]")
+        plt.grid(True)
 
 
 def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_nodes=None):

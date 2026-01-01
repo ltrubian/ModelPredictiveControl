@@ -210,6 +210,12 @@ def closed_loop_simulation(
     ref_preview: bool = False,
     save_video: bool = False,
     ctrl_on: bool = True,
+    # - controller sample time [s]
+    Ts=0.02,
+    # - number of shooting time intervals
+    N=100,
+    # define simulation fundamental time step [s]
+    ts_sim=0.001,
     Q=np.diag([10, 10, 0.1, 0.1]),
     R=0.01,
     ini_type: _INITIAL_TYPE = "down",
@@ -225,18 +231,11 @@ def closed_loop_simulation(
             """See instead closed_loop_simulation_extended"""
         )
 
-    # define simulation fundamental time step [s]
-    ts_sim = 0.001
-
     # model used to simulate the system
     sim_model = get_inverted_pendulum_model(type=mod_type_sim)
 
     # setup controller parameters
     model = get_inverted_pendulum_model(type=mod_type_ocp)
-    # - controller sample time [s]
-    Ts = 0.02
-    # - number of shooting time intervals
-    N = 100
     # - prediction horizon length [s]
     T = N * Ts
 
@@ -367,10 +366,10 @@ def closed_loop_simulation(
             )
 
     try:
-        plot_results(time, time_dt, simX, simU, y_ref)
-        plot_cpt(time_dt, cpt, Ts)
+        plot_results(time, time_dt, simX, simU, y_ref, ctrl_on=ctrl_on)
 
         if ctrl_on:
+            plot_cpt(time_dt, cpt, Ts)
             plot_pred_traj(
                 time,
                 time_dt,
