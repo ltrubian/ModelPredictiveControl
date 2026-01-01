@@ -246,7 +246,6 @@ def closed_loop_simulation(
     x0 = get_initial_condition(nx, ini_type)
 
     # define reference
-    # - define reference for the angle and, accordingly, the simulation time Tf
     y_ref, Tf = get_reference(Ts, N, nx, nu, ref_type)
     # compute the number of steps for simulation
     N_steps, N_steps_dt, n_update = compute_num_steps(ts_sim, Ts, Tf)

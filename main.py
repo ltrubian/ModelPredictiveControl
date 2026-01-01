@@ -34,6 +34,7 @@ EXPER: list = [
             "ini_type": "off-balance",
             "ctrl_on": False,
             "mod_type_sim": "non-linear",
+            "ref_type": "empty-2s",
         },
         "specific": [
             {"t_sim": 1e-5, "integ_type_sim": "ERK"},
@@ -55,6 +56,7 @@ EXPER: list = [
             "ini_type": "off-balance",
             "ctrl_on": False,
             "mod_type_sim": "spring",
+            "ref_type": "empty-2s",
         },
         "specific": [
             {"t_sim": 1e-5, "integ_type_sim": "ERK"},
@@ -81,10 +83,14 @@ EXPER: list = [
 ]
 
 if __name__ == "__main__":
+    SUMMARY: list = [
+        f""" {x}) {EXPER[x]["simulation"]} cases [0-{len(EXPER[x]["specific"])}]"""
+        for x in range(len(EXPER))
+    ]
     parser = argparse.ArgumentParser(
         prog="Interted pendulum, simulation and control",
         description="""It runs simulaitn of inverted pendulum in some predefined and testes scenarios""",
-        epilog="Text at the bottom of help",
+        epilog="\n".join(SUMMARY),
     )
     parser.add_argument(
         "-s", "--simulation", type=int, default=0, help="select simulation case"

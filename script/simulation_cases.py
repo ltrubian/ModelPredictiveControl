@@ -3,7 +3,7 @@ from typing import Literal, Tuple, get_args
 import numpy as np
 from .utils import piecewise_constant
 
-_REFERENCE_TYPE = Literal["swing-up", "horizontal"]
+_REFERENCE_TYPE = Literal["swing-up", "horizontal", "empty-2s"]
 _INITIAL_TYPE = Literal["up", "down", "off-balance"]
 
 
@@ -49,6 +49,17 @@ def get_reference(
                     np.zeros((len(pos_ref), nx + nu - 2)),
                 )
             )
+        case "empty-2s":
+            pos_ref, Tf = piecewise_constant(np.array([0]), np.array([2]), Ts)
+            # - provide a reference for all variables
+            y_ref = np.column_stack(
+                (
+                    pos_ref.reshape(-1, 1),
+                    np.zeros((len(pos_ref), 1)),
+                    np.zeros((len(pos_ref), nx + nu - 2)),
+                )
+            )
+
         case _:
             raise ValueError(f"{ref_type = } is not in {get_args(_REFERENCE_TYPE)}")
 
