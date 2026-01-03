@@ -1,20 +1,24 @@
-import pprint
-from script.loop_simulations import (
-    closed_loop_simulation_extended,
-    closed_loop_simulation,
-)
-import numpy as np
 import argparse
+import pprint
 
-EXPER: list = [
+import numpy as np
+
+from script.loop_simulations import (
+    closed_loop_simulation,
+    closed_loop_simulation_extended,
+)
+
+from script.utils import _REFERENCE_TYPE
+
+SCENARIOS: list = [
     {
         "simulation": "task 1, default non-linear",
         "function": "closed_loop_simulation",
         "common": {"ini_type": "down", "ref_type": "swing-up"},
         "specific": [
             {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.01},
+            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.05},
+            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.10},
         ],
     },
     {
@@ -23,12 +27,12 @@ EXPER: list = [
         "common": {"ini_type": "down", "ref_type": "swing-up"},
         "specific": [
             {"Q": np.diag([10, 10, 0.1, 0.1, 0.01]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.01]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.01]), "R": 0.01},
+            {"Q": np.diag([10, 10, 0.1, 0.1, 0.05]), "R": 0.01},
+            {"Q": np.diag([10, 10, 0.1, 0.1, 0.10]), "R": 0.01},
         ],
     },
     {
-        "simulation": "task 2, default system",
+        "simulation": "task 2, (only) simulate default system",
         "function": "closed_loop_simulation",
         "common": {
             "ini_type": "off-balance",
@@ -51,7 +55,7 @@ EXPER: list = [
         ],
     },
     {
-        "simulation": "task 2, system with spring",
+        "simulation": "task 2, (only) simulate system with spring",
         "function": "closed_loop_simulation",
         "common": {
             "ini_type": "off-balance",
@@ -103,17 +107,19 @@ EXPER: list = [
 ]
 
 if __name__ == "__main__":
-    SUMMARY: list = [
-        f""" -s {x} -c [0-{len(EXPER[x]["specific"]) - 1}] {EXPER[x]["simulation"]} """
-        for x in range(len(EXPER))
+    print(f"{type(_REFERENCE_TYPE)}")
+    help_summary: list = [
+        f""" -s {x} -c [0-{len(SCENARIOS[x]["specific"]) - 1}] -> {SCENARIOS[x]["simulation"]}\n"""
+        f"""\t\t varying: {list(SCENARIOS[x]["specific"][0].keys())}"""
+        for x in range(len(SCENARIOS))
     ]
     parser = argparse.ArgumentParser(
         description="""It runs simulaitn of inverted pendulum in some predefined and tested scenarios""",
-        epilog="\n".join(SUMMARY),
+        epilog="Here the possible choices of arguments\n" + "\n".join(help_summary),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "-s", "--simulation", type=int, default=0, help="select simulation case"
+        "-s", "--simulation", type=int, default=0, help="select simulation to run"
     )
     parser.add_argument(
         "-c",
@@ -124,14 +130,16 @@ if __name__ == "__main__":
     )
     args_parsed = parser.parse_args()
 
-    TASK: int = args_parsed.simulation
-    EX: int = args_parsed.case
+    simulation: int = args_parsed.simulation
+    case: int = args_parsed.case
 
-    if not (0 <= TASK < len(EXPER)) or not (0 <= EX < len(EXPER[TASK]["specific"])):
+    if not (0 <= simulation < len(SCENARIOS)) or not (
+        0 <= case < len(SCENARIOS[simulation]["specific"])
+    ):
         raise ValueError("check --help for valid indexes of simulations and cases")
 
-    curr_exp = EXPER[TASK]
-    args = curr_exp["common"] | curr_exp["specific"][EX]
+    curr_exp = SCENARIOS[simulation]
+    args = curr_exp["common"] | curr_exp["specific"][case]
 
     print(f"Simulation {curr_exp['simulation']} with parameters: ")
     pprint.pp(args)

@@ -14,35 +14,43 @@ from script.plot_utils import (
     plot_pred_traj,
     plot_results,
 )
-from script.simulation_cases import (
-    _INITIAL_TYPE,
-    _REFERENCE_TYPE,
-    get_initial_condition,
-    get_reference,
-)
 from script.solvers_description import (
     _INTEGRATOR_TYPE,
     create_ocp_solver_description,
     create_sim_solver_description,
 )
-from script.utils import compute_num_steps
+from script.utils import (
+    _INITIAL_TYPE,
+    _REFERENCE_TYPE,
+    compute_num_steps,
+    get_initial_condition,
+    get_reference,
+)
 
 
 def closed_loop_simulation_extended(
     shifting: bool = False,
     ref_preview: bool = False,
-    save_video=False,
+    save_video: bool = False,
     Q: NDArray = np.diag([10, 10, 0.1, 0.1, 0.01]),
     R: float = 0.01,
     ini_type: _INITIAL_TYPE = "down",
     ref_type: _REFERENCE_TYPE = "swing-up",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
-):
+) -> None:
     """Runs a closede loop simulatoin with the 'extended' controller.
 
     Args:
-
+        shifting:       shifting of the state for the ocp solver
+        ref_preview:    allow controller reference preview
+        save_video:     save video of the system
+        Q:              state weight
+        R:              input weight
+        ini_type:       initial condition (up/down/off-balance)
+        ref_type:       reference type (swing-up/horizontal/empty)
+        integ_type_sim: integrator type (IRK/ERK) for the simulation solver
+        integ_type_ocp: integrator type (IRK/ERK) for the controller solver
     """
 
     # define simulation fundamental time step [s]
@@ -234,7 +242,27 @@ def closed_loop_simulation(
     mod_type_ocp: _MODEL_TYPE = "non-linear",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
-):
+) -> None:
+    """Runs a closede loop simulatoin with the 'extended' controller.
+
+    Args:
+        shifting:       shifting of the state for the ocp solver
+        ref_preview:    allow controller reference preview
+        save_video:     save video of the system
+        ctrl_on:        activate controller
+        ts_sim:         sampling time of the simulation
+        Ts:             sampling time of the controller
+        N:              number of shooting intervals
+        Q:              state weight
+        R:              input weight
+        ini_type:       initial condition (up/down/off-balance)
+        ref_type:       reference type (swing-up/horizontal/empty)
+        mod_type_sim:   model type to simulate
+        mod_type_ocp:   model type used by the controller
+        integ_type_sim: integrator type (IRK/ERK) for the simulation solver
+        integ_type_ocp: integrator type (IRK/ERK) for the controller solver
+    """
+
     if mod_type_sim == "extended" or mod_type_ocp == "extended":
         raise ValueError(
             """this function does NOT work with mod_type_[sim/ocp] == "extended". """
