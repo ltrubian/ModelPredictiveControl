@@ -8,8 +8,6 @@ from script.loop_simulations import (
     closed_loop_simulation_extended,
 )
 
-from script.utils import _REFERENCE_TYPE
-
 SCENARIOS: list = [
     {
         "simulation": "task 1, default non-linear",
@@ -107,7 +105,6 @@ SCENARIOS: list = [
 ]
 
 if __name__ == "__main__":
-    print(f"{type(_REFERENCE_TYPE)}")
     help_summary: list = [
         f""" -s {x} -c [0-{len(SCENARIOS[x]["specific"]) - 1}] -> {SCENARIOS[x]["simulation"]}\n"""
         f"""\t\t varying: {list(SCENARIOS[x]["specific"][0].keys())}"""
@@ -119,7 +116,12 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "-s", "--simulation", type=int, default=0, help="select simulation to run"
+        "-s",
+        "--simulation",
+        type=int,
+        default=0,
+        help="select simulation to run",
+        choices=list(range(len(SCENARIOS))),
     )
     parser.add_argument(
         "-c",
