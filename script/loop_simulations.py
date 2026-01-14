@@ -330,6 +330,7 @@ def closed_loop_simulation(
 
     # variable to store total CPU time
     cpt = np.zeros((N_steps_dt,))
+    cpt_sim = np.zeros((N_steps,))
 
     # variable to store solver status
     status = np.zeros((N_steps_dt,))
@@ -385,9 +386,11 @@ def closed_loop_simulation(
 
         # simulate system
         simX[i + 1, :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
+        cpt_sim[i] = acados_integrator.get("CPUtime")
 
     # visualize results
-    print("Average total CPU time: " + str(np.mean(cpt) * 1000) + " ms")
+    print("Average total controller CPU time: " + str(np.mean(cpt) * 1000) + " ms")
+    print("Average total simulation CPU time: " + str(np.mean(cpt_sim) * 1000) + " ms")
 
     time = np.linspace(0, ts_sim * N_steps, N_steps + 1)
     time_dt = np.linspace(0, Ts * N_steps_dt, N_steps_dt + 1)
@@ -415,6 +418,8 @@ def closed_loop_simulation(
                 u_opt,
                 np.argwhere(np.round(time_dt, 3) == 5),
             )
+        else:
+            plot_cpt(time, cpt_sim, ts_sim)
 
         if save_video:
             inverted_pendulum_animation(simX[:, 0], simX[:, 1], ts_sim)
