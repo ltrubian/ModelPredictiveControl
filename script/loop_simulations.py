@@ -26,6 +26,7 @@ from script.utils import (
     get_initial_condition,
     get_reference,
 )
+from script.analysis import stepinfo
 
 
 def closed_loop_simulation_extended(
@@ -242,7 +243,7 @@ def closed_loop_simulation(
     mod_type_ocp: _MODEL_TYPE = "non-linear",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
-) -> None:
+) -> NDArray:
     """Runs a closede loop simulatoin with the 'extended' controller.
 
     Args:
@@ -404,6 +405,13 @@ def closed_loop_simulation(
                 f"* k = {int(k.item())} [t = {time_dt[k].item():.3f} s] - status {int(status[k].item())}"
             )
 
+    # reference: NDArray = np.repeat(reference, round(Ts / Tsim))
+    # np.nonzero(np.ediff1d(array[:, state]))[0]
+    signal = simX[1:, :]
+    reference = np.repeat(y_ref[: -N - 1, :-1], n_update, axis=0)
+    stepindex = np.nonzero(np.ediff1d(y_ref[:, 1]))[0][0]
+    (peak, peaktime, overshoot) = stepinfo(signal, reference, ts_sim, stepindex)
+    print(f"{peak = } \n {peaktime = } \n {overshoot =}")
     try:
         plot_results(time, time_dt, simX, simU, y_ref, ctrl_on=ctrl_on)
 
@@ -428,3 +436,4 @@ def closed_loop_simulation(
 
     except KeyboardInterrupt:
         pass
+    return y_ref
