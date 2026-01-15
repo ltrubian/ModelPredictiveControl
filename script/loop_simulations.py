@@ -113,12 +113,11 @@ def closed_loop_simulation_extended(
 
     # create variables to store state and control trajectories
     simX = np.zeros((N_steps + 1, nx))
-    simU = np.zeros((N_steps_dt + 1, nu))
-    deltaU = np.zeros((N_steps_dt, nu))
+    simU = np.zeros((N_steps_dt, nu))
     # set intial state
     simX[0, :] = x0
     # set initial input, PURE EXTENDED
-    simU[0, :] = x0[4:]
+    inputk1 = simX[0, 4:]
 
     # create variables to store, at each iteration, previous optimal solution
     x_opt = np.zeros((N + 1, nx, N_steps_dt))
@@ -157,7 +156,9 @@ def closed_loop_simulation_extended(
                 acados_ocp_solver.set(N, "x", x_opt[N, :, k - 1])
 
             # update the control
-            deltaU[k, :] = acados_ocp_solver.solve_for_x0(
+            simX[i, 4:] = inputk1
+            acados_ocp_solver.set(0, "x", simX[i, :])
+            simU[k, :] = acados_ocp_solver.solve_for_x0(
                 simX[i, :], fail_on_nonzero_status=False, print_stats_on_failure=False
             )
 
@@ -175,15 +176,15 @@ def closed_loop_simulation_extended(
             x_opt[N, :, k] = acados_ocp_solver.get(N, "x")
 
             # update next input via integration, PURE EXTENDED
-            simU[k + 1, :] = simU[k, :] + Ts * deltaU[k, :]
+            inputk1 = simX[i, 4:] + Ts * simU[k, :]
 
             # update discrete-time iteration counter
             k += 1
 
         # simulate system
-        simX[i + 1, 0:4] = acados_integrator.simulate(simX[i, 0:4], simU[k - 1, :])
+        simX[i + 1, 0:4] = acados_integrator.simulate(simX[i, 0:4], simX[i, 4:])
         # unpdate the state with the actual input, PURE EXTENDED
-        simX[i + 1, 4:] = simU[k - 1, :]
+        simX[i + 1, 4:] = simX[i, 4:]
 
     # visualize results
     print("Average total CPU time: " + str(np.mean(cpt) * 1000) + " ms")
@@ -211,14 +212,14 @@ def closed_loop_simulation_extended(
     )
     try:
         # cut last unused input, PURE EXTENDED
-        plot_results(time, time_dt, simX, simU[:-1, :], y_ref)
+        plot_results(time, time_dt, simX, simX[1::n_update, 4:], y_ref)
         plot_cpt(time_dt, cpt, Ts)
 
         plot_pred_traj(
             time,
             time_dt,
             simX,
-            simU[:-1, :],
+            simX[1::n_update, 4:],
             x_opt,
             u_opt,
             np.argwhere(np.round(time_dt, 3) == 5),
