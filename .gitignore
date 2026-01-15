@@ -209,6 +209,7 @@ __marimo__/
 # ACADOS
 /c_generated_code/
 acados*.json
+inverted*.json
 
 # Latex output files
 *.aux

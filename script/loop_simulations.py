@@ -200,6 +200,15 @@ def closed_loop_simulation_extended(
                 f"* k = {int(k.item())} [t = {time_dt[k].item():.3f} s] - status {int(status[k].item())}"
             )
 
+    signal = simX[1:, :]
+    reference = np.repeat(y_ref[: -N - 1, :-1], n_update, axis=0)
+    stepindex = np.nonzero(np.ediff1d(reference[:, 1]))[0][0]
+    (underpeak, underpeak_time, peak, peak_times, overshoots, rise_times) = stepinfo(
+        signal, reference, ts_sim, stepindex
+    )
+    print(
+        f"{peak = } \n{peak_times = } \n {overshoots = } \n{rise_times = } \n{underpeak = } \n{underpeak_time = } \n"
+    )
     try:
         # cut last unused input, PURE EXTENDED
         plot_results(time, time_dt, simX, simU[:-1, :], y_ref)
@@ -409,9 +418,14 @@ def closed_loop_simulation(
     # np.nonzero(np.ediff1d(array[:, state]))[0]
     signal = simX[1:, :]
     reference = np.repeat(y_ref[: -N - 1, :-1], n_update, axis=0)
-    stepindex = np.nonzero(np.ediff1d(y_ref[:, 1]))[0][0]
-    (peak, peaktime, overshoot) = stepinfo(signal, reference, ts_sim, stepindex)
-    print(f"{peak = } \n {peaktime = } \n {overshoot =}")
+    stepindex = np.nonzero(np.ediff1d(reference[:, 1]))[0][0]
+    (underpeak, underpeak_time, peak, peak_times, overshoots, rise_times) = stepinfo(
+        signal, reference, ts_sim, stepindex
+    )
+    print(
+        f"{peak = } \n{peak_times = } \n {overshoots = } \n{rise_times = } \n{underpeak = } \n{underpeak_time = } \n"
+    )
+    return y_ref
     try:
         plot_results(time, time_dt, simX, simU, y_ref, ctrl_on=ctrl_on)
 

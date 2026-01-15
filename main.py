@@ -15,8 +15,8 @@ SCENARIOS: list = [
         "common": {"ini_type": "down", "ref_type": "swing-up"},
         "specific": [
             {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.05},
             {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.10},
+            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.20},
         ],
     },
     {
@@ -25,8 +25,8 @@ SCENARIOS: list = [
         "common": {"ini_type": "down", "ref_type": "swing-up"},
         "specific": [
             {"Q": np.diag([10, 10, 0.1, 0.1, 0.01]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.05]), "R": 0.01},
             {"Q": np.diag([10, 10, 0.1, 0.1, 0.10]), "R": 0.01},
+            {"Q": np.diag([10, 10, 0.1, 0.1, 0.20]), "R": 0.01},
         ],
     },
     {
