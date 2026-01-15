@@ -425,7 +425,6 @@ def closed_loop_simulation(
     print(
         f"{peak = } \n{peak_times = } \n {overshoots = } \n{rise_times = } \n{underpeak = } \n{underpeak_time = } \n"
     )
-    return y_ref
     try:
         plot_results(time, time_dt, simX, simU, y_ref, ctrl_on=ctrl_on)
 
