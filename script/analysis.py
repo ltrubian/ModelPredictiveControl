@@ -58,10 +58,12 @@ def stepinfo(
             * Tsim
         } \n {
             signal[
-                signal.shape[0]
-                - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
-                - 1,
-                :,
+                (
+                    signal.shape[0]
+                    - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
+                    - 1,
+                    range(n),
+                )
             ]
         }"
     )
