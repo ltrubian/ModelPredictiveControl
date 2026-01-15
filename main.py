@@ -5,35 +5,38 @@ import numpy as np
 
 from script.loop_simulations import (
     closed_loop_simulation,
-    closed_loop_simulation_extended,
 )
+from script.analysis import stepinfo
 
 SCENARIOS: list = [
     {
         "simulation": "task 1, default non-linear",
-        "function": "closed_loop_simulation",
-        "common": {"ini_type": "down", "ref_type": "swing-up"},
+        "common": {
+            "ini_type": "down",
+            "ref_type": "swing-up",
+            "mod_type_ocp": "non-linear",
+        },
         "specific": [
             {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.01},
             {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.10},
             {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.20},
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.1},
         ],
     },
     {
         "simulation": "task 1, extended controlloer",
-        "function": "closed_loop_simulation_extended",
-        "common": {"ini_type": "down", "ref_type": "swing-up"},
+        "common": {
+            "ini_type": "down",
+            "ref_type": "swing-up",
+            "mod_type_ocp": "extended",
+        },
         "specific": [
             {"Q": np.diag([10, 10, 0.1, 0.1, 0.01]), "R": 0.01},
             {"Q": np.diag([10, 10, 0.1, 0.1, 0.10]), "R": 0.01},
             {"Q": np.diag([10, 10, 0.1, 0.1, 0.20]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.1]), "R": 0},
         ],
     },
     {
         "simulation": "task 2, (only) simulate default system",
-        "function": "closed_loop_simulation",
         "common": {
             "ini_type": "off-balance",
             "ctrl_on": False,
@@ -56,7 +59,6 @@ SCENARIOS: list = [
     },
     {
         "simulation": "task 2, (only) simulate system with spring",
-        "function": "closed_loop_simulation",
         "common": {
             "ini_type": "off-balance",
             "ctrl_on": False,
@@ -79,7 +81,6 @@ SCENARIOS: list = [
     },
     {
         "simulation": "task 2, default non-linear, higher sampling time",
-        "function": "closed_loop_simulation",
         "common": {"ini_type": "down", "ref_type": "swing-up", "Ts": 0.1, "N": 20},
         "specific": [
             {"integ_type_ocp": "ERK"},
@@ -88,7 +89,6 @@ SCENARIOS: list = [
     },
     {
         "simulation": "task 3, NMPC vs linear MPC",
-        "function": "closed_loop_simulation",
         "common": {"ini_type": "up", "ref_type": "horizontal"},
         "specific": [
             {"mod_type_ocp": "linear"},
@@ -97,7 +97,6 @@ SCENARIOS: list = [
     },
     {
         "simulation": "task 3, swing-up maneuver with linear MPC",
-        "function": "closed_loop_simulation",
         "common": {"ini_type": "down", "ref_type": "swing-up"},
         "specific": [
             {"mod_type_ocp": "linear"},
@@ -148,8 +147,16 @@ if __name__ == "__main__":
     print(f"Simulation {curr_exp['simulation']} with parameters: ")
     pprint.pp(args)
 
-    match curr_exp["function"]:
-        case "closed_loop_simulation":
-            closed_loop_simulation(**args, save_video=False)
-        case "closed_loop_simulation_extended":
-            closed_loop_simulation_extended(**args, save_video=False)
+    (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim) = closed_loop_simulation(
+        **args, save_video=False
+    )
+
+    signal = simX[1:, :]
+    reference = np.repeat(y_ref[: -N - 1, :-1], n_update, axis=0)
+    stepindex = np.nonzero(np.ediff1d(reference[:, 1]))[0][0]
+    (underpeak, underpeak_time, peak, peak_times, overshoots, rise_times) = stepinfo(
+        signal, reference, ts_sim, stepindex
+    )
+    print(
+        f"{peak = } \n{peak_times = } \n {overshoots = } \n{rise_times = } \n{underpeak = } \n{underpeak_time = } \n"
+    )

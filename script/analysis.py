@@ -10,7 +10,7 @@ def stepinfo(
     reference: NDArray,
     Tsim: float,
     stepindex: int,
-) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Compute classical step information for every refstate
     Args:
         signal:     states values
@@ -24,6 +24,7 @@ def stepinfo(
         peak_time:  time instant of peak
         overshoot:  peak relative to the step
         rise_time:  how much time is necessary to go from 90% to 10% error
+        settling_time:  first t such abs(errors) < 2%
 
     """
     n: int = signal.shape[1]
@@ -49,23 +50,21 @@ def stepinfo(
     overshoots = np.where(step != 0, peak / step * 100, np.inf)
 
     # settling time
-    print(
-        f"ok = {
-            (
-                signal.shape[0]
-                - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
-            )
-            * Tsim
-        } \n {
-            signal[
-                (
-                    signal.shape[0]
-                    - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
-                    - 1,
-                    range(n),
-                )
-            ]
-        }"
-    )
+    settling_time: NDArray = signal[
+        (
+            signal.shape[0]
+            - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
+            - 1,
+            range(n),
+        )
+    ]
 
-    return (underpeak, underpeak_time, peak, peak_times, overshoots, rise_times)
+    return (
+        underpeak,
+        underpeak_time,
+        peak,
+        peak_times,
+        overshoots,
+        rise_times,
+        settling_time,
+    )
