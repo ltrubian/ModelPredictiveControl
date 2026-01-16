@@ -38,24 +38,37 @@ if __name__ == "__main__":
         default=0,
         help="select one of the available set of parameters",
     )
+    parser.add_argument(
+        "-a",
+        "--analysis",
+        action="store_true",
+        default=False,
+        help="make comparison of all the cases for the simulation 's' ('c' will be ignored)",
+    )
     args_parsed = parser.parse_args()
     simulation: int = args_parsed.simulation
     case: int = args_parsed.case
+    analysis = args_parsed.analysis
 
     if not (0 <= simulation < len(SCENARIOS)) or not (
         0 <= case < len(SCENARIOS[simulation]["specific"])
     ):
         raise ValueError("check --help for valid indexes of simulations and cases")
 
+    # set cases to be run: all or just the one selected
     curr_exp = SCENARIOS[simulation]
+    if not analysis:
+        curr_exp["specific"] = [curr_exp["specific"][case]]
+    n_exp = len(curr_exp["specific"])
 
+    # array to collect all simulations results
     expX = np.zeros(1)
     expU = np.zeros(1)
     expR = np.zeros(1)
     expCtime = np.zeros(1)
     expStime = np.zeros(1)
-    n_exp = len(curr_exp["specific"])
 
+    ########## SIMULATIONS ##########
     for jj in range(n_exp):
         args = curr_exp["common"] | curr_exp["specific"][jj]
         print(f"Simulation {curr_exp['simulation']} with parameters: ")
@@ -64,6 +77,7 @@ if __name__ == "__main__":
         (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim) = closed_loop_simulation(
             **args, save_video=False
         )
+        # correctly initialize the vectors
         if expX.shape[0] < 2:
             expR = y_ref[:-N, :4]
             expX = np.zeros((simX.shape[0], 4, n_exp))
@@ -76,6 +90,7 @@ if __name__ == "__main__":
         expCtime[:, jj] = cpt
         expStime[:, jj] = cpt_sim
 
+    ########## NUMERICAL STATES PERFORMANCE ##########
     Tf = ts_sim * (simX.shape[0] - 1)
     time_dt = np.linspace(0, Tf, simU.shape[0] + 1)
     time = np.linspace(0, Tf, simX.shape[0])
@@ -97,19 +112,20 @@ if __name__ == "__main__":
         reference = np.repeat(expR[:-1, state], n_update, axis=0) * multdeg
         reference = np.repeat(reference[:, np.newaxis], n_exp, axis=1)
 
-        diffs = np.nonzero(np.ediff1d(reference[:, 1]))[0]
+        diffs = np.nonzero(np.ediff1d(reference[:, 0]))[0]
         stepindex = diffs[0] if len(diffs) != 0 else 0
         results: Tuple = stepinfo(signal, reference, ts_sim, stepindex)
 
         print(f"{' state ' + str(state) + ' ':#^15}")
         for stat in str_res:
-            print(f"{stat:>15} ", end="")
+            print(f"{stat:>10} ", end="")
         print("\n")
         for i in range(signal.shape[1]):
             for stat in results:
-                print(f"{stat[i]:15.4e} ", end="")
+                print(f"{stat[i]:10.2f} ", end="")
             print("\n")
 
+    ########## PLOTS ##########
     try:
         plot_results(time, time_dt, expX, expU, expR, ctrl_on=True)
 

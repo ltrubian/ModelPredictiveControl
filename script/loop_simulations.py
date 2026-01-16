@@ -122,7 +122,7 @@ def closed_loop_simulation(
     if mod_type_ocp == "extended":
         # set initial input, PURE EXTENDED
         inputk1 = simX[0, 4:]
-    ############ EXTENDED END ############
+    ############ EXTENDED END ##############
 
     # create variables to store, at each iteration, previous optimal solution
     x_opt = np.zeros((N + 1, nx, N_steps_dt))
@@ -166,7 +166,7 @@ def closed_loop_simulation(
                 # update the control for EXTENDED
                 simX[i, 4:] = inputk1
                 acados_ocp_solver.set(0, "x", simX[i, :])
-            ############ EXTENDED END ############
+            ############ EXTENDED END ##############
 
             # update the control
             simU[k, :] = acados_ocp_solver.solve_for_x0(
@@ -179,7 +179,7 @@ def closed_loop_simulation(
             if mod_type_ocp == "extended":
                 # update next input via integration, PURE EXTENDED
                 inputk1 = simX[i, 4:] + Ts * simU[k, :]
-            ############ EXTENDED END ############
+            ############ EXTENDED END ##############
 
             # store CPU time required for solving the problem
             cpt[k] = acados_ocp_solver.get_stats("time_tot")
@@ -206,7 +206,7 @@ def closed_loop_simulation(
         else:
             # simulate system
             simX[i + 1, :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
-        ############ EXTENDED END ############
+        ############ EXTENDED END ##############
 
         cpt_sim[i] = acados_integrator.get("CPUtime")
 
