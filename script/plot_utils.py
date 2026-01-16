@@ -8,11 +8,11 @@ from matplotlib.patches import Circle
 from tqdm import tqdm
 
 
-def plot_results(time, time_dt, state, control, ref, ctrl_on=True):
+def plot_results(time, time_dt, state, control, ref, labels, ctrl_on=True):
     # latexify_plot()
-
+    labels = labels + ["reference"] if ctrl_on else labels
     # plot state
-    (fig, ax) = plt.subplots(2, 2)
+    (fig, _) = plt.subplots(2, 2)
 
     # - plot cart position
     plt.subplot(2, 2, 1)
@@ -50,14 +50,13 @@ def plot_results(time, time_dt, state, control, ref, ctrl_on=True):
     plt.gca().set_ylabel("$\\omega$ [deg/s]")
     plt.grid(True)
 
-    handles, labels = ax.get_legend_handles_labels()
-    plt.tight_layout()
-    fig.legend(handles, ["a", "b", "c"])
+    fig.legend(labels, loc="lower center", ncol=1 + len(labels), draggable=True)
 
     if ctrl_on:
         # plot control input
         plt.figure()
         plt.step(time_dt, np.vstack((control, control[-1])), where="post")
+        plt.legend(labels, loc="upper center", ncol=1 + len(labels))
         plt.gca().set_xlabel("time [s]")
         plt.gca().set_ylabel("$F$ [N]")
         plt.grid(True)
@@ -127,31 +126,18 @@ def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_node
     plt.grid(True)
 
 
-def plot_cpt(t, cpt, Ts=None):
+def plot_cpt(t, cpt, Ts=None, labels=[]):
     # latexify_plot()
 
     plt.figure()
     plt.step(t, np.vstack((cpt, cpt[-1])) * 1000, where="post")
+    plt.legend(labels, loc="upper center", ncol=len(labels))
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("cpt [ms]")
     plt.grid(True)
 
     if Ts is not None:
         plt.hlines(Ts * 1000, t[0], t[-1], linestyles="dashed", alpha=0.7)
-
-
-def plot_grid(grid, title=None):
-    # latexify_plot()
-
-    plt.figure()
-
-    for t in grid:
-        plt.axvline(t)
-
-    plt.gca().set_xlabel("time [s]")
-
-    if title is not None:
-        plt.title("\\bfseries " + title)
 
 
 def inverted_pendulum_animation(p, theta, ts, filename=None):

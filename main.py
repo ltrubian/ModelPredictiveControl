@@ -154,8 +154,9 @@ if __name__ == "__main__":
             ctrl_on=control_on,
         )
 
-        plot_cpt(time_dt, expCtime, Tf / expU.shape[0], curr_exp["labels"])
-        plot_cpt(time, expStime, ts_sim, curr_exp["labels"])
+        if control_on:
+            plot_cpt(time_dt, expCtime, None, curr_exp["labels"])
+        plot_cpt(time, expStime, None, curr_exp["labels"])
         plt.show()
     except KeyboardInterrupt:
         pass
