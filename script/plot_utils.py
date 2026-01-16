@@ -12,7 +12,7 @@ def plot_results(time, time_dt, state, control, ref, ctrl_on=True):
     # latexify_plot()
 
     # plot state
-    plt.subplots(2, 2)
+    (fig, ax) = plt.subplots(2, 2)
 
     # - plot cart position
     plt.subplot(2, 2, 1)
@@ -50,7 +50,9 @@ def plot_results(time, time_dt, state, control, ref, ctrl_on=True):
     plt.gca().set_ylabel("$\\omega$ [deg/s]")
     plt.grid(True)
 
+    handles, labels = ax.get_legend_handles_labels()
     plt.tight_layout()
+    fig.legend(handles, ["a", "b", "c"])
 
     if ctrl_on:
         # plot control input
