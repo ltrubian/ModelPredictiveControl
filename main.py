@@ -1,109 +1,16 @@
 import argparse
 import pprint
+from typing import Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 
+from scenarios import SCENARIOS
+from script.analysis import stepinfo
 from script.loop_simulations import (
     closed_loop_simulation,
 )
-from script.analysis import stepinfo
-
-SCENARIOS: list = [
-    {
-        "simulation": "task 1, default non-linear",
-        "common": {
-            "ini_type": "down",
-            "ref_type": "swing-up",
-            "mod_type_ocp": "non-linear",
-        },
-        "specific": [
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.10},
-            {"Q": np.diag([10, 10, 0.1, 0.1]), "R": 0.20},
-        ],
-    },
-    {
-        "simulation": "task 1, extended controlloer",
-        "common": {
-            "ini_type": "down",
-            "ref_type": "swing-up",
-            "mod_type_ocp": "extended",
-        },
-        "specific": [
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.01]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.10]), "R": 0.01},
-            {"Q": np.diag([10, 10, 0.1, 0.1, 0.20]), "R": 0.01},
-        ],
-    },
-    {
-        "simulation": "task 2, (only) simulate default system",
-        "common": {
-            "ini_type": "off-balance",
-            "ctrl_on": False,
-            "mod_type_sim": "non-linear",
-            "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
-        },
-        "specific": [
-            {"ts_sim": 1e-5, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-4, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-3, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-2, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-1, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-5, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-4, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-3, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-2, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-1, "integ_type_sim": "IRK"},
-        ],
-    },
-    {
-        "simulation": "task 2, (only) simulate system with spring",
-        "common": {
-            "ini_type": "off-balance",
-            "ctrl_on": False,
-            "mod_type_sim": "spring",
-            "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
-        },
-        "specific": [
-            {"ts_sim": 1e-5, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-4, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-3, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-2, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-1, "integ_type_sim": "ERK"},
-            {"ts_sim": 1e-5, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-4, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-3, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-2, "integ_type_sim": "IRK"},
-            {"ts_sim": 1e-1, "integ_type_sim": "IRK"},
-        ],
-    },
-    {
-        "simulation": "task 2, default non-linear, higher sampling time",
-        "common": {"ini_type": "down", "ref_type": "swing-up", "Ts": 0.1, "N": 20},
-        "specific": [
-            {"integ_type_ocp": "ERK"},
-            {"integ_type_ocp": "IRK"},
-        ],
-    },
-    {
-        "simulation": "task 3, NMPC vs linear MPC",
-        "common": {"ini_type": "up", "ref_type": "horizontal"},
-        "specific": [
-            {"mod_type_ocp": "linear"},
-            {"mod_type_ocp": "non-linear"},
-        ],
-    },
-    {
-        "simulation": "task 3, swing-up maneuver with linear MPC",
-        "common": {"ini_type": "down", "ref_type": "swing-up"},
-        "specific": [
-            {"mod_type_ocp": "linear"},
-            {"mod_type_ocp": "non-linear"},
-        ],
-    },
-]
+from script.plot_utils import plot_cpt, plot_results
 
 if __name__ == "__main__":
     help_summary: list = [
@@ -132,7 +39,6 @@ if __name__ == "__main__":
         help="select one of the available set of parameters",
     )
     args_parsed = parser.parse_args()
-
     simulation: int = args_parsed.simulation
     case: int = args_parsed.case
 
@@ -142,21 +48,73 @@ if __name__ == "__main__":
         raise ValueError("check --help for valid indexes of simulations and cases")
 
     curr_exp = SCENARIOS[simulation]
-    args = curr_exp["common"] | curr_exp["specific"][case]
 
-    print(f"Simulation {curr_exp['simulation']} with parameters: ")
-    pprint.pp(args)
+    expX = np.zeros(1)
+    expU = np.zeros(1)
+    expR = np.zeros(1)
+    expCtime = np.zeros(1)
+    expStime = np.zeros(1)
+    n_exp = len(curr_exp["specific"])
 
-    (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim) = closed_loop_simulation(
-        **args, save_video=False
+    for jj in range(n_exp):
+        args = curr_exp["common"] | curr_exp["specific"][jj]
+        print(f"Simulation {curr_exp['simulation']} with parameters: ")
+        pprint.pp(args)
+
+        (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim) = closed_loop_simulation(
+            **args, save_video=False
+        )
+        if expX.shape[0] < 2:
+            expR = y_ref[:-N, :4]
+            expX = np.zeros((simX.shape[0], 4, n_exp))
+            expU = np.zeros((simU.shape[0], n_exp))
+            expCtime = np.zeros((simU.shape[0], n_exp))
+            expStime = np.zeros((simX.shape[0] - 1, n_exp))
+
+        expX[:, :, jj] = simX[:, :4]
+        expU[:, jj : 1 + jj] = simX[:-1:n_update, 4:] if simX.shape[1] > 4 else simU
+        expCtime[:, jj] = cpt
+        expStime[:, jj] = cpt_sim
+
+    Tf = ts_sim * (simX.shape[0] - 1)
+    time_dt = np.linspace(0, Tf, simU.shape[0] + 1)
+    time = np.linspace(0, Tf, simX.shape[0])
+
+    str_res = (
+        "underpeak",
+        "Upeak time",
+        "peak",
+        "peak time",
+        "overshoot",
+        "rise time",
+        "settl time",
     )
 
-    signal = simX[1:, :]
-    reference = np.repeat(y_ref[: -N - 1, :-1], n_update, axis=0)
-    stepindex = np.nonzero(np.ediff1d(reference[:, 1]))[0][0]
-    (underpeak, underpeak_time, peak, peak_times, overshoots, rise_times) = stepinfo(
-        signal, reference, ts_sim, stepindex
-    )
-    print(
-        f"{peak = } \n{peak_times = } \n {overshoots = } \n{rise_times = } \n{underpeak = } \n{underpeak_time = } \n"
-    )
+    for state in range(4):
+        multdeg = 180 / np.pi if state % 2 else 1
+
+        signal = expX[1:, state, :] * multdeg
+        reference = np.repeat(expR[:-1, state], n_update, axis=0) * multdeg
+        reference = np.repeat(reference[:, np.newaxis], n_exp, axis=1)
+
+        diffs = np.nonzero(np.ediff1d(reference[:, 1]))[0]
+        stepindex = diffs[0] if len(diffs) != 0 else 0
+        results: Tuple = stepinfo(signal, reference, ts_sim, stepindex)
+
+        print(f"{' state ' + str(state) + ' ':#^15}")
+        for stat in str_res:
+            print(f"{stat:>15} ", end="")
+        print("\n")
+        for i in range(signal.shape[1]):
+            for stat in results:
+                print(f"{stat[i]:15.4e} ", end="")
+            print("\n")
+
+    try:
+        plot_results(time, time_dt, expX, expU, expR, ctrl_on=True)
+
+        plot_cpt(time_dt, expCtime, Tf / simU.shape[0])
+        plot_cpt(time, expStime, ts_sim)
+        plt.show()
+    except KeyboardInterrupt:
+        pass

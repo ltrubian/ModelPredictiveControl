@@ -3,8 +3,6 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-# reference: NDArray = np.repeat(reference, round(Ts / Tsim))
-# np.nonzero(np.ediff1d(array[:, state]))[0]
 def stepinfo(
     signal: NDArray,
     reference: NDArray,
@@ -37,34 +35,33 @@ def stepinfo(
     # rise time
     en_tr = np.argmax((abserrors > 0) & (abserrors <= step * 0.1), axis=0)
     st_tr = np.argmax((abserrors > 0) & (abserrors <= step * 0.9), axis=0)
-    rise_times = (en_tr - st_tr) * Tsim
+    rise_time = (en_tr - st_tr) * Tsim
     # underpeak: movement in opposite direction wrt final destination
     underpeak_index = np.argmax(np.abs(signal - end_v), axis=0)
     underpeak_time = underpeak_index * Tsim
     underpeak = signal[(underpeak_index, range(n))] - start_v
 
     # overshoot in absolute value and percentage
-    peakindexes: NDArray = np.argmax(np.abs(signal - start_v), axis=0)
-    peak: NDArray = abserrors[(peakindexes, range(n))]
-    peak_times: NDArray = peakindexes * Tsim
-    overshoots = np.where(step != 0, peak / step * 100, np.inf)
+    peakindexe: NDArray = np.argmax(np.abs(signal - start_v), axis=0)
+    peak: NDArray = abserrors[(peakindexe, range(n))]
+    peak_time: NDArray = peakindexe * Tsim
+    overshoot = np.repeat(np.inf, n)
+    nz = np.nonzero(step)
+    overshoot[nz] = peak[nz] / step[nz] * 100
 
     # settling time
-    settling_time: NDArray = signal[
-        (
-            signal.shape[0]
-            - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
-            - 1,
-            range(n),
-        )
-    ]
+    settling_time: NDArray = (
+        signal.shape[0]
+        - np.argmax(np.abs(np.flipud(signal) - end_v) > 0.02 * step, axis=0)
+        - 1
+    ) * Tsim
 
     return (
         underpeak,
         underpeak_time,
         peak,
-        peak_times,
-        overshoots,
-        rise_times,
+        peak_time,
+        overshoot,
+        rise_time,
         settling_time,
     )

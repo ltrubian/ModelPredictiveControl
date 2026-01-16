@@ -9,7 +9,7 @@ def get_inverted_pendulum_model(
     M=1, m=0.1, l=0.8, g=9.81, k=10**4, type: _MODEL_TYPE = "non-linear"
 ) -> AcadosModel:
     # set model name
-    model_name = "inverted_pendulum"
+    model_name = str("inverted_pendulum_" + type).replace("-", "_")
 
     # the physical parameters of the system are passed as parameters
     # g - gravity acceleration [m/s**2]

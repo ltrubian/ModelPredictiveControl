@@ -55,7 +55,7 @@ def plot_results(time, time_dt, state, control, ref, ctrl_on=True):
     if ctrl_on:
         # plot control input
         plt.figure()
-        plt.step(time_dt, np.append(control, control[-1]), where="post")
+        plt.step(time_dt, np.vstack((control, control[-1])), where="post")
         plt.gca().set_xlabel("time [s]")
         plt.gca().set_ylabel("$F$ [N]")
         plt.grid(True)
@@ -129,7 +129,7 @@ def plot_cpt(t, cpt, Ts=None):
     # latexify_plot()
 
     plt.figure()
-    plt.step(t, np.append(cpt, cpt[-1]) * 1000, where="post")
+    plt.step(t, np.vstack((cpt, cpt[-1])) * 1000, where="post")
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("cpt [ms]")
     plt.grid(True)
