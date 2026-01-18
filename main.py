@@ -20,9 +20,8 @@ if __name__ == "__main__":
     ]
     parser = argparse.ArgumentParser(
         description="""It runs simulaitn of inverted pendulum in some """
-                    """predefined and tested scenarios""",
-        epilog="Here the possible choices of arguments\n" +
-        "\n".join(help_summary),
+        """predefined and tested scenarios""",
+        epilog="Here the possible choices of arguments\n" + "\n".join(help_summary),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -46,7 +45,7 @@ if __name__ == "__main__":
         action="store_true",
         default=False,
         help="""make comparison of all the cases for the simulation 's'"""
-             """('c' will be ignored)""",
+        """('c' will be ignored)""",
     )
     args_parsed = parser.parse_args()
     simulation: int = args_parsed.simulation
@@ -56,8 +55,7 @@ if __name__ == "__main__":
     if not (0 <= simulation < len(SCENARIOS)) or not (
         0 <= case < len(SCENARIOS[simulation]["specific"])
     ):
-        raise ValueError(
-            "check --help for valid indexes of simulations and cases")
+        raise ValueError("check --help for valid indexes of simulations and cases")
 
     # set cases to be run: all or just the one selected
     curr_exp = SCENARIOS[simulation]
@@ -99,11 +97,9 @@ if __name__ == "__main__":
                 simX[-1, :4],
             )
         )
-        expU[:, jj: 1 + jj] = simX[:-1:n_update,
-                                   4:] if simX.shape[1] > 4 else simU
+        expU[:, jj : 1 + jj] = simX[:-1:n_update, 4:] if simX.shape[1] > 4 else simU
         expCtime[:, jj] = cpt
-        expStime[:, jj] = np.repeat(
-            cpt_sim, expStime.shape[0] / cpt_sim.shape[0])
+        expStime[:, jj] = np.repeat(cpt_sim, expStime.shape[0] / cpt_sim.shape[0])
         Ts_sim[jj] = ts_sim
 
     control_on: bool = (

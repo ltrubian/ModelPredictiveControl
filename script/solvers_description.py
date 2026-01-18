@@ -110,8 +110,7 @@ def create_ocp_solver_description(
             ocp.constraints.lbx_e = np.array([-20])
             ocp.constraints.ubx_e = np.array([20])
         case _:
-            raise ValueError(f"{constraints=} is not in {
-                             get_args(_CONSTRAINTS)}")
+            raise ValueError(f"{constraints=} is not in {get_args(_CONSTRAINTS)}")
 
     # initialize constraint on initial condition
     ocp.constraints.x0 = x0

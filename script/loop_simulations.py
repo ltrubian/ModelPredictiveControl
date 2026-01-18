@@ -6,8 +6,7 @@ from acados_template import (
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from script.inverted_pendulum_model import (
-    _MODEL_TYPE, get_inverted_pendulum_model)
+from script.inverted_pendulum_model import _MODEL_TYPE, get_inverted_pendulum_model
 from script.solvers_description import (
     _INTEGRATOR_TYPE,
     create_ocp_solver_description,
@@ -165,8 +164,7 @@ def closed_loop_simulation(
             # (otherwise, it will be automatically intialized with the previous solution)
             if shifting and k > 0:
                 for stage in range(N):
-                    acados_ocp_solver.set(
-                        stage, "x", x_opt[stage + 1, :, k - 1])
+                    acados_ocp_solver.set(stage, "x", x_opt[stage + 1, :, k - 1])
                     acados_ocp_solver.set(
                         stage, "u", u_opt[min([stage + 1, N - 1]), :, k - 1]
                     )
@@ -212,23 +210,19 @@ def closed_loop_simulation(
         # ############ EXTENDED START ############
         if mod_type_ocp == "extended":
             # simulate system
-            simX[i + 1,
-                 0:4] = acados_integrator.simulate(simX[i, 0:4], simX[i, 4:])
+            simX[i + 1, 0:4] = acados_integrator.simulate(simX[i, 0:4], simX[i, 4:])
             # unpdate the state with the actual input, PURE EXTENDED
             simX[i + 1, 4:] = simX[i, 4:]
         # ############ EXTENDED END ##############
         else:
             # simulate system
-            simX[i + 1,
-                 :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
+            simX[i + 1, :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
 
         cpt_sim[i] = acados_integrator.get("CPUtime")
 
     # visualize results
-    print("Average total controller CPU time: " +
-          str(np.mean(cpt) * 1000) + " ms")
-    print("Average total simulation CPU time: " +
-          str(np.mean(cpt_sim) * 1000) + " ms")
+    print("Average total controller CPU time: " + str(np.mean(cpt) * 1000) + " ms")
+    print("Average total simulation CPU time: " + str(np.mean(cpt_sim) * 1000) + " ms")
 
     time_dt = np.linspace(0, Ts * N_steps_dt, N_steps_dt + 1)
 

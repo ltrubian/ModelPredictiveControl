@@ -103,8 +103,7 @@ def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_node
 
     plt.subplot(2, 2, 1)
     plt.plot(time, state[:, 0])
-    plt.step(time_pred, x_opt[:, 0, k].reshape(-1, 1),
-             where="post", color="red")
+    plt.step(time_pred, x_opt[:, 0, k].reshape(-1, 1), where="post", color="red")
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$p$ [m]")
     plt.grid(True)
@@ -121,8 +120,7 @@ def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_node
 
     plt.subplot(2, 2, 3)
     plt.plot(time, state[:, 2])
-    plt.step(time_pred, x_opt[:, 2, k].reshape(-1, 1),
-             where="post", color="red")
+    plt.step(time_pred, x_opt[:, 2, k].reshape(-1, 1), where="post", color="red")
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
@@ -205,8 +203,7 @@ def inverted_pendulum_animation(p, theta, ts, filename=None):
     y_pendulum = l * np.cos(theta)
 
     # draw pendulum mass
-    mass = Circle((y_pendulum[0], y_pendulum[0]),
-                  0.1, color=mass_color, zorder=4)
+    mass = Circle((y_pendulum[0], y_pendulum[0]), 0.1, color=mass_color, zorder=4)
     ax.add_patch(mass)
 
     with animation_writer.saving(
