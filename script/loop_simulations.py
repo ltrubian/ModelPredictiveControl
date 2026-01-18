@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 from acados_template import (
     AcadosOcpSolver,
@@ -8,7 +6,8 @@ from acados_template import (
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from script.inverted_pendulum_model import _MODEL_TYPE, get_inverted_pendulum_model
+from script.inverted_pendulum_model import (
+    _MODEL_TYPE, get_inverted_pendulum_model)
 from script.solvers_description import (
     _INTEGRATOR_TYPE,
     create_ocp_solver_description,
@@ -42,8 +41,8 @@ def closed_loop_simulation(
     mod_type_ocp: _MODEL_TYPE = "non-linear",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
-) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, int, int, float]:
-    """Runs a closede loop simulatoin with the 'extended' controller.
+) -> tuple[NDArray, NDArray, NDArray, NDArray, NDArray, int, int, float]:
+    """Runs a closede loop simulation with the 'extended' controller.
 
     Args:
         shifting:       shifting of the state for the ocp solver
@@ -61,6 +60,18 @@ def closed_loop_simulation(
         mod_type_ocp:   model type used by the controller
         integ_type_sim: integrator type (IRK/ERK) for the simulation solver
         integ_type_ocp: integrator type (IRK/ERK) for the controller solver
+
+    Returns:
+        simX:       state as used by the controller (for extended dynamics
+                    it contains also the input of the real system)
+        simU:       input as computed by the controller (for exteded dynamics
+                    it is the rate of the input)
+        y_ref:      reference trajectory
+        cpt:        cpu time for controller solver
+        cpt_sim:    cpu time for simulation
+        n_update:   how many update the controller make for each simulated step
+        N:          number of shooting intervals
+        ts_sim:     sampling time of the simulation
     """
 
     # model used to simulate the system
@@ -118,11 +129,11 @@ def closed_loop_simulation(
     # set intial state
     simX[0, :] = x0
 
-    ############ EXTENDED START ############
+    # ############ EXTENDED START ############
     if mod_type_ocp == "extended":
         # set initial input, PURE EXTENDED
         inputk1 = simX[0, 4:]
-    ############ EXTENDED END ##############
+    # ############ EXTENDED END ##############
 
     # create variables to store, at each iteration, previous optimal solution
     x_opt = np.zeros((N + 1, nx, N_steps_dt))
@@ -154,19 +165,20 @@ def closed_loop_simulation(
             # (otherwise, it will be automatically intialized with the previous solution)
             if shifting and k > 0:
                 for stage in range(N):
-                    acados_ocp_solver.set(stage, "x", x_opt[stage + 1, :, k - 1])
+                    acados_ocp_solver.set(
+                        stage, "x", x_opt[stage + 1, :, k - 1])
                     acados_ocp_solver.set(
                         stage, "u", u_opt[min([stage + 1, N - 1]), :, k - 1]
                     )
 
                 acados_ocp_solver.set(N, "x", x_opt[N, :, k - 1])
 
-            ############ EXTENDED START ############
+            # ############ EXTENDED START ############
             if mod_type_ocp == "extended":
                 # update the control for EXTENDED
                 simX[i, 4:] = inputk1
                 acados_ocp_solver.set(0, "x", simX[i, :])
-            ############ EXTENDED END ##############
+            # ############ EXTENDED END ##############
 
             # update the control
             simU[k, :] = acados_ocp_solver.solve_for_x0(
@@ -175,11 +187,11 @@ def closed_loop_simulation(
                 print_stats_on_failure=False,
             )
 
-            ############ EXTENDED START ############
+            # ############ EXTENDED START ############
             if mod_type_ocp == "extended":
                 # update next input via integration, PURE EXTENDED
                 inputk1 = simX[i, 4:] + Ts * simU[k, :]
-            ############ EXTENDED END ##############
+            # ############ EXTENDED END ##############
 
             # store CPU time required for solving the problem
             cpt[k] = acados_ocp_solver.get_stats("time_tot")
@@ -197,22 +209,26 @@ def closed_loop_simulation(
             # update discrete-time iteration counter
             k += 1
 
-        ############ EXTENDED START ############
+        # ############ EXTENDED START ############
         if mod_type_ocp == "extended":
             # simulate system
-            simX[i + 1, 0:4] = acados_integrator.simulate(simX[i, 0:4], simX[i, 4:])
+            simX[i + 1,
+                 0:4] = acados_integrator.simulate(simX[i, 0:4], simX[i, 4:])
             # unpdate the state with the actual input, PURE EXTENDED
             simX[i + 1, 4:] = simX[i, 4:]
+        # ############ EXTENDED END ##############
         else:
             # simulate system
-            simX[i + 1, :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
-        ############ EXTENDED END ##############
+            simX[i + 1,
+                 :] = acados_integrator.simulate(simX[i, :], simU[k - 1, :])
 
         cpt_sim[i] = acados_integrator.get("CPUtime")
 
     # visualize results
-    print("Average total controller CPU time: " + str(np.mean(cpt) * 1000) + " ms")
-    print("Average total simulation CPU time: " + str(np.mean(cpt_sim) * 1000) + " ms")
+    print("Average total controller CPU time: " +
+          str(np.mean(cpt) * 1000) + " ms")
+    print("Average total simulation CPU time: " +
+          str(np.mean(cpt_sim) * 1000) + " ms")
 
     time_dt = np.linspace(0, Ts * N_steps_dt, N_steps_dt + 1)
 
@@ -222,32 +238,8 @@ def closed_loop_simulation(
         print("\nSolver returned non-zero status at the following iterations:")
         for k in nonzero_status:
             print(
-                f"* k = {int(k.item())} [t = {time_dt[k].item():.3f} s] - status {int(status[k].item())}"
+                f"* k = {int(k.item())} [t = {time_dt[k].item():.3f} s] - "
+                f"status {int(status[k].item())}"
             )
 
     return (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim)
-
-    # time = np.linspace(0, ts_sim * N_steps, N_steps + 1)
-    # try:
-    #    plot_results(time, time_dt, simX, simU, y_ref, ctrl_on=ctrl_on)
-    #    if ctrl_on:
-    #        plot_cpt(time_dt, cpt, Ts)
-    #        plot_pred_traj(
-    #            time,
-    #            time_dt,
-    #            simX,
-    #            simU,
-    #            x_opt,
-    #            u_opt,
-    #            np.argwhere(np.round(time_dt, 3) == 5),
-    #        )
-    #    else:
-    #        plot_cpt(time, cpt_sim, ts_sim)
-
-    #    if save_video:
-    #        inverted_pendulum_animation(simX[:, 0], simX[:, 1], ts_sim)
-
-    #    plt.show()
-
-    # except KeyboardInterrupt:
-    #    pass

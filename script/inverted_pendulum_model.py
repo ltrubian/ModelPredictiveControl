@@ -108,7 +108,8 @@ def get_inverted_pendulum_model(
             f_impl = xdot - f_expl
         case _:
             raise ValueError(
-                f"Invalid model type {type}, must be one of {get_args(_MODEL_TYPE)}"
+                f"""Invalid model type {type}, must be one of
+                    {get_args(_MODEL_TYPE)}"""
             )
 
     # create acados model and fill in all the required fields

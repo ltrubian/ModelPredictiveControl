@@ -1,4 +1,3 @@
-from typing import Tuple
 import numpy as np
 from numpy.typing import NDArray
 
@@ -8,7 +7,7 @@ def stepinfo(
     reference: NDArray,
     Tsim: float,
     stepindex: int,
-) -> Tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
+) -> tuple[NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray]:
     """Compute classical step information for every refstate
     Args:
         signal:     states values

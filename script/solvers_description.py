@@ -35,7 +35,7 @@ def create_ocp_solver_description(
         R: input cost weight
         shooting_nodes:
         constraints: (input-U/state-F) constraints on extended state or input
-        integrator_type: numerical integrator type (Explicit/Implicit Runge-Kutta)
+        integrator_type: numerical integrator type (Explicit/Implicit RK)
 
     Returns:
         AcadosOcp (acados optimal control problem)
@@ -43,7 +43,7 @@ def create_ocp_solver_description(
     """
 
     assert integrator_type in get_args(_INTEGRATOR_TYPE), (
-        f"{integrator_type = } not in {get_args(_INTEGRATOR_TYPE)}"
+        f"{integrator_type=} not in {get_args(_INTEGRATOR_TYPE)}"
     )
     # create ocp object to formulate the OCP
     ocp = AcadosOcp()
@@ -110,7 +110,8 @@ def create_ocp_solver_description(
             ocp.constraints.lbx_e = np.array([-20])
             ocp.constraints.ubx_e = np.array([20])
         case _:
-            raise ValueError(f"{constraints = } is not in {get_args(_CONSTRAINTS)}")
+            raise ValueError(f"{constraints=} is not in {
+                             get_args(_CONSTRAINTS)}")
 
     # initialize constraint on initial condition
     ocp.constraints.x0 = x0
@@ -158,7 +159,7 @@ def create_sim_solver_description(
     """
 
     assert integrator_type in get_args(_INTEGRATOR_TYPE), (
-        f"{integrator_type = } not in {get_args(_INTEGRATOR_TYPE)}"
+        f"{integrator_type=} not in {get_args(_INTEGRATOR_TYPE)}"
     )
     if name is None:
         name: str = "sim_" + model.name

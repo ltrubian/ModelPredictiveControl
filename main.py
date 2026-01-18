@@ -1,6 +1,5 @@
 import argparse
 import pprint
-from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,13 +13,16 @@ from script.plot_utils import plot_cpt, plot_results
 
 if __name__ == "__main__":
     help_summary: list = [
-        f""" -s {x:>2} -c [0-{len(SCENARIOS[x]["specific"]) - 1}] -> {SCENARIOS[x]["simulation"]}\n"""
+        f""" -s {x:>2} -c [0-{len(SCENARIOS[x]["specific"]) - 1}
+                                  ] -> {SCENARIOS[x]["simulation"]}\n"""
         f"""\t\t varying: {list(SCENARIOS[x]["specific"][0].keys())}"""
         for x in range(len(SCENARIOS))
     ]
     parser = argparse.ArgumentParser(
-        description="""It runs simulaitn of inverted pendulum in some predefined and tested scenarios""",
-        epilog="Here the possible choices of arguments\n" + "\n".join(help_summary),
+        description="""It runs simulaitn of inverted pendulum in some """
+                    """predefined and tested scenarios""",
+        epilog="Here the possible choices of arguments\n" +
+        "\n".join(help_summary),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -43,7 +45,8 @@ if __name__ == "__main__":
         "--analysis",
         action="store_true",
         default=False,
-        help="make comparison of all the cases for the simulation 's' ('c' will be ignored)",
+        help="""make comparison of all the cases for the simulation 's'"""
+             """('c' will be ignored)""",
     )
     args_parsed = parser.parse_args()
     simulation: int = args_parsed.simulation
@@ -53,7 +56,8 @@ if __name__ == "__main__":
     if not (0 <= simulation < len(SCENARIOS)) or not (
         0 <= case < len(SCENARIOS[simulation]["specific"])
     ):
-        raise ValueError("check --help for valid indexes of simulations and cases")
+        raise ValueError(
+            "check --help for valid indexes of simulations and cases")
 
     # set cases to be run: all or just the one selected
     curr_exp = SCENARIOS[simulation]
@@ -70,7 +74,7 @@ if __name__ == "__main__":
     expStime = np.zeros(1)
     Ts_sim = np.zeros(n_exp)
 
-    ########## SIMULATIONS ##########
+    # ########## SIMULATIONS ##########
     for jj in range(n_exp):
         args = curr_exp["common"] | curr_exp["specific"][jj]
         print(f"Simulation {curr_exp['simulation']} with parameters: ")
@@ -95,9 +99,11 @@ if __name__ == "__main__":
                 simX[-1, :4],
             )
         )
-        expU[:, jj : 1 + jj] = simX[:-1:n_update, 4:] if simX.shape[1] > 4 else simU
+        expU[:, jj: 1 + jj] = simX[:-1:n_update,
+                                   4:] if simX.shape[1] > 4 else simU
         expCtime[:, jj] = cpt
-        expStime[:, jj] = np.repeat(cpt_sim, expStime.shape[0] / cpt_sim.shape[0])
+        expStime[:, jj] = np.repeat(
+            cpt_sim, expStime.shape[0] / cpt_sim.shape[0])
         Ts_sim[jj] = ts_sim
 
     control_on: bool = (
@@ -108,7 +114,7 @@ if __name__ == "__main__":
     Tf = Ts_sim[0] * (expX.shape[0] - 1)
     time_dt = np.linspace(0, Tf, expU.shape[0] + 1)
     time = np.linspace(0, Tf, expX.shape[0])
-    ########## NUMERICAL STATES PERFORMANCE ##########
+    # ########## NUMERICAL STATES PERFORMANCE ##########
     if control_on:
         str_res = (
             "underpeak",
@@ -129,7 +135,7 @@ if __name__ == "__main__":
 
             diffs = np.nonzero(np.ediff1d(reference[:, 0]))[0]
             stepindex = diffs[0] if len(diffs) != 0 else 0
-            results: Tuple = stepinfo(signal, reference, ts_sim, stepindex)
+            results: tuple = stepinfo(signal, reference, ts_sim, stepindex)
 
             print(f"{' state ' + str(state) + ' ':#^20}")
             print(f"{'labels':>15}", end="")
@@ -142,7 +148,7 @@ if __name__ == "__main__":
                     print(f"{stat[i]:10.2f} ", end="")
                 print("")
 
-    ########## PLOTS ##########
+    # ########## PLOTS ##########
     try:
         plot_results(
             time,

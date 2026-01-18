@@ -8,7 +8,9 @@ from matplotlib.patches import Circle
 from tqdm import tqdm
 
 
-def plot_results(time, time_dt, state, control, ref, labels, ctrl_on=True):
+def plot_results(
+    time, time_dt, state, control, ref, labels, ctrl_on=True, xlimits=(2, 4.5)
+):
     # latexify_plot()
     labels = labels + ["reference"] if ctrl_on else labels
     # plot state
@@ -19,18 +21,20 @@ def plot_results(time, time_dt, state, control, ref, labels, ctrl_on=True):
     plt.plot(time, state[:, 0])
     if ctrl_on:
         plt.plot(time_dt, ref[: len(time_dt), 0])
-    plt.gca().set_xlabel("time [s]")
+    # plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$p$ [m]")
     plt.grid(True)
+    # plt.xlim(xlimits)
 
     # - plot pendulum angle
     plt.subplot(2, 2, 2)
     plt.plot(time, np.rad2deg(state[:, 1]))
     if ctrl_on:
         plt.plot(time_dt, np.rad2deg(ref[: len(time_dt), 1]))
-    plt.gca().set_xlabel("time [s]")
+    # plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\theta$ [deg]")
     plt.gca().grid(True)
+    # plt.xlim(xlimits)
 
     # - plot cart velocity
     plt.subplot(2, 2, 3)
@@ -40,6 +44,7 @@ def plot_results(time, time_dt, state, control, ref, labels, ctrl_on=True):
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
+    # plt.xlim(xlimits)
 
     # - plot pendulum angular velocity
     plt.subplot(2, 2, 4)
@@ -49,8 +54,10 @@ def plot_results(time, time_dt, state, control, ref, labels, ctrl_on=True):
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\omega$ [deg/s]")
     plt.grid(True)
+    # plt.xlim(xlimits)
 
-    fig.legend(labels, loc="lower center", ncol=1 + len(labels), draggable=True)
+    fig.legend(labels, loc="upper center", ncol=1 + len(labels))
+    fig.tight_layout()
 
     if ctrl_on:
         # plot control input
@@ -60,6 +67,22 @@ def plot_results(time, time_dt, state, control, ref, labels, ctrl_on=True):
         plt.gca().set_xlabel("time [s]")
         plt.gca().set_ylabel("$F$ [N]")
         plt.grid(True)
+        # plt.xlim(xlimits)
+
+
+def plot_cpt(t, cpt, Ts=None, labels=[], xlimits=(2, 4.5)):
+    # latexify_plot()
+
+    plt.figure()
+    plt.step(t, np.vstack((cpt, cpt[-1])) * 1000, where="post")
+    plt.legend(labels, loc="upper center", ncol=len(labels))
+    plt.gca().set_xlabel("time [s]")
+    plt.gca().set_ylabel("cpt [ms]")
+    plt.grid(True)
+    # plt.xlim(xlimits)
+
+    if Ts is not None:
+        plt.hlines(Ts * 1000, t[0], t[-1], linestyles="dashed", alpha=0.7)
 
 
 def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_nodes=None):
@@ -80,7 +103,8 @@ def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_node
 
     plt.subplot(2, 2, 1)
     plt.plot(time, state[:, 0])
-    plt.step(time_pred, x_opt[:, 0, k].reshape(-1, 1), where="post", color="red")
+    plt.step(time_pred, x_opt[:, 0, k].reshape(-1, 1),
+             where="post", color="red")
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$p$ [m]")
     plt.grid(True)
@@ -97,7 +121,8 @@ def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_node
 
     plt.subplot(2, 2, 3)
     plt.plot(time, state[:, 2])
-    plt.step(time_pred, x_opt[:, 2, k].reshape(-1, 1), where="post", color="red")
+    plt.step(time_pred, x_opt[:, 2, k].reshape(-1, 1),
+             where="post", color="red")
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
@@ -124,20 +149,6 @@ def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_node
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$F$ [N]")
     plt.grid(True)
-
-
-def plot_cpt(t, cpt, Ts=None, labels=[]):
-    # latexify_plot()
-
-    plt.figure()
-    plt.step(t, np.vstack((cpt, cpt[-1])) * 1000, where="post")
-    plt.legend(labels, loc="upper center", ncol=len(labels))
-    plt.gca().set_xlabel("time [s]")
-    plt.gca().set_ylabel("cpt [ms]")
-    plt.grid(True)
-
-    if Ts is not None:
-        plt.hlines(Ts * 1000, t[0], t[-1], linestyles="dashed", alpha=0.7)
 
 
 def inverted_pendulum_animation(p, theta, ts, filename=None):
@@ -194,7 +205,8 @@ def inverted_pendulum_animation(p, theta, ts, filename=None):
     y_pendulum = l * np.cos(theta)
 
     # draw pendulum mass
-    mass = Circle((y_pendulum[0], y_pendulum[0]), 0.1, color=mass_color, zorder=4)
+    mass = Circle((y_pendulum[0], y_pendulum[0]),
+                  0.1, color=mass_color, zorder=4)
     ax.add_patch(mass)
 
     with animation_writer.saving(

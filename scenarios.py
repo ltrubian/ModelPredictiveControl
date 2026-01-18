@@ -1,9 +1,9 @@
 import numpy as np
 
 SCENARIOS: list = [
-    ################################################
-    #################### TASK 1 ####################
-    ################################################
+    # ################################################
+    # #################### TASK 1 ####################
+    # ################################################
     {
         "simulation": "task 1, controllers comparison",
         "common": {
@@ -50,9 +50,9 @@ SCENARIOS: list = [
         ],
         "labels": [str(x) for x in [0.01, 0.1, 0.2]],
     },
-    ################################################
-    #################### TASK 2 ####################
-    ################################################
+    # ################################################
+    # #################### TASK 2 ####################
+    # ################################################
     {
         "simulation": "task 2, simulate default system (ERK)",
         "common": {
@@ -60,7 +60,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "non-linear",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "integ_type_sim": "ERK",
         },
         "specific": [
@@ -78,7 +79,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "non-linear",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "integ_type_sim": "IRK",
         },
         "specific": [
@@ -96,7 +98,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "non-linear",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "ts_sim": 1e-2,
         },
         "specific": [
@@ -112,7 +115,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "non-linear",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "ts_sim": 1e-1,
         },
         "specific": [
@@ -128,7 +132,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "spring",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "integ_type_sim": "ERK",
         },
         "specific": [
@@ -146,7 +151,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "spring",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "integ_type_sim": "IRK",
         },
         "specific": [
@@ -164,7 +170,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "spring",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "ts_sim": 1e-2,
         },
         "specific": [
@@ -180,7 +187,8 @@ SCENARIOS: list = [
             "ctrl_on": False,
             "mod_type_sim": "spring",
             "ref_type": "empty-2s",
-            "Ts": 1,  # this allows to pass (unnecessary) the checks on controller sampling
+            # this allows to pass the checks on controller sampling
+            "Ts": 1,
             "ts_sim": 1e-1,
         },
         "specific": [
@@ -198,9 +206,9 @@ SCENARIOS: list = [
         ],
         "labels": ["ERK", "IRK"],
     },
-    ################################################
-    #################### TASK 3 ####################
-    ################################################
+    # ################################################
+    # #################### TASK 3 ####################
+    # ################################################
     {
         "simulation": "task 3, NMPC vs linear MPC",
         "common": {"ini_type": "up", "ref_type": "horizontal"},
