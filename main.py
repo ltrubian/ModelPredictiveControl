@@ -1,17 +1,16 @@
-from numpy.typing import NDArray
 import argparse
 import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+from numpy.typing import NDArray
 
 from scenarios import SCENARIOS
 from script.analysis import stepinfo
 from script.loop_simulations import (
     closed_loop_simulation,
 )
-from script.plot_utils import plot_cpt, plot_results
+from script.plot_utils import plot_cpt, plot_pred_traj, plot_results
 
 if __name__ == "__main__":
     help_summary: list = [
@@ -80,6 +79,8 @@ if __name__ == "__main__":
     expX = np.zeros(1)
     expU = np.zeros(1)
     expR = np.zeros(1)
+    expX_opt = np.zeros(1)
+    expU_opt = np.zeros(1)
     expCtime = np.zeros(1)
     expStime = np.zeros(1)
     Ts_sim = np.zeros(n_exp)
@@ -89,8 +90,8 @@ if __name__ == "__main__":
         print(f"Simulation {curr_exp['simulation']} with parameters: ")
         pprint.pp(args)
 
-        (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim) = closed_loop_simulation(
-            **args, save_video=False
+        (simX, simU, y_ref, x_opt, u_opt, cpt, cpt_sim, n_update, N, ts_sim) = (
+            closed_loop_simulation(**args, save_video=False)
         )
         # correctly initialize the vectors
         if expX.shape[0] < 2:
@@ -99,6 +100,7 @@ if __name__ == "__main__":
             expU = np.zeros((simU.shape[0], n_exp))
             expCtime = np.zeros((simU.shape[0], n_exp))
             expStime = np.zeros((simX.shape[0] - 1, n_exp))
+            expX_opt = np.zeros((x_opt.shape[0], 4, x_opt.shape[2], n_exp))
 
         expX[:, :, jj] = np.vstack(
             (
@@ -111,6 +113,7 @@ if __name__ == "__main__":
         expU[:, jj : 1 + jj] = simX[:-1:n_update, 4:] if simX.shape[1] > 4 else simU
         expCtime[:, jj] = cpt
         expStime[:, jj] = np.repeat(cpt_sim, expStime.shape[0] / cpt_sim.shape[0])
+        expX_opt[:, :, :, jj] = x_opt[:, :4, :]
         Ts_sim[jj] = ts_sim
 
     # ##################################################
@@ -168,7 +171,7 @@ if __name__ == "__main__":
     # ###########################
     try:
         xlimits: tuple | None = (
-            (4, 10) if curr_exp["common"]["ref_type"] == "swing-up" else None
+            (4.5, 10) if curr_exp["common"]["ref_type"] == "swing-up" else None
         )
 
         folder = f"./images/sim_{simulation:0>2}/"
@@ -196,6 +199,21 @@ if __name__ == "__main__":
                 prefix="ctrl_",
                 xlimits=xlimits,
                 save=save,
+            )
+            k: int = np.argwhere(np.round(time_dt, 3) == 5.5)[0]
+            plot_pred_traj(
+                time,
+                time_dt,
+                simX,
+                simU,
+                expX_opt[:, :4, k, :].reshape(-1, 4, n_exp),
+                expU_opt,
+                k,
+                xlimits=(5, 7.5),
+                save=save,
+                folder=folder,
+                labels=curr_exp["labels"],
+                shooting_nodes=None,
             )
         plot_cpt(
             time,

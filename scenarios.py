@@ -213,6 +213,15 @@ SCENARIOS: list = [
         "labels": ["ERK", "IRK"],
     },
     {
+        "simulation": "task 2, default non-linear controller, default sampling time",
+        "common": {"ini_type": "down", "ref_type": "swing-up", "Ts": 0.02, "N": 100},
+        "specific": [
+            {"integ_type_ocp": "ERK"},
+            {"integ_type_ocp": "IRK"},
+        ],
+        "labels": ["ERK", "IRK"],
+    },
+    {
         "simulation": "task 2, default non-linear controller, higher sampling time",
         "common": {"ini_type": "down", "ref_type": "swing-up", "Ts": 0.1, "N": 20},
         "specific": [

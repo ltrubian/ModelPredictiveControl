@@ -40,7 +40,9 @@ def closed_loop_simulation(
     mod_type_ocp: _MODEL_TYPE = "non-linear",
     integ_type_sim: _INTEGRATOR_TYPE = "ERK",
     integ_type_ocp: _INTEGRATOR_TYPE = "ERK",
-) -> tuple[NDArray, NDArray, NDArray, NDArray, NDArray, int, int, float]:
+) -> tuple[
+    NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, NDArray, int, int, float
+]:
     """Runs a closede loop simulation with the 'extended' controller.
 
     Args:
@@ -66,6 +68,8 @@ def closed_loop_simulation(
         simU:       input as computed by the controller (for exteded dynamics
                     it is the rate of the input)
         y_ref:      reference trajectory
+        x_opt:      predicted state trajectories
+        u_opt:      predicted input trajectories
         cpt:        cpu time for controller solver
         cpt_sim:    cpu time for simulation
         n_update:   how many update the controller make for each simulated step
@@ -236,4 +240,4 @@ def closed_loop_simulation(
                 f"status {int(status[k].item())}"
             )
 
-    return (simX, simU, y_ref, cpt, cpt_sim, n_update, N, ts_sim)
+    return (simX, simU, y_ref, x_opt, u_opt, cpt, cpt_sim, n_update, N, ts_sim)
