@@ -39,7 +39,7 @@ def get_reference(
             )
         case "horizontal":
             pos_ref, Tf = piecewise_constant(
-                np.array([0, 1, -1, 0]), np.array([2.5, 5, 7.5, 10]), Ts
+                np.array([0, 1, -1, 0]), np.array([2.5, 2.5, 2.5, 2.5]), Ts
             )
             # - provide a reference for all variables
             y_ref = np.column_stack(

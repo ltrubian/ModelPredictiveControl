@@ -1,8 +1,10 @@
+from numpy.typing import NDArray
 import argparse
 import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 from scenarios import SCENARIOS
 from script.analysis import stepinfo
@@ -13,8 +15,8 @@ from script.plot_utils import plot_cpt, plot_results
 
 if __name__ == "__main__":
     help_summary: list = [
-        f""" -s {x:>2} -c [0-{len(SCENARIOS[x]["specific"]) - 1}
-                                  ] -> {SCENARIOS[x]["simulation"]}\n"""
+        f""" -s {x:>2} -c [0-{len(SCENARIOS[x]["specific"]) - 1}] """
+        f"""-> {SCENARIOS[x]["simulation"]}\n"""
         f"""\t\t varying: {list(SCENARIOS[x]["specific"][0].keys())}"""
         for x in range(len(SCENARIOS))
     ]
@@ -47,10 +49,16 @@ if __name__ == "__main__":
         help="""make comparison of all the cases for the simulation 's'"""
         """('c' will be ignored)""",
     )
+    parser.add_argument(
+        "--save-fig",
+        action="store_true",
+        default=False,
+        help="""save figures in ./images/sim_<simulation>/""",
+    )
     args_parsed = parser.parse_args()
     simulation: int = args_parsed.simulation
     case: int = args_parsed.case
-    analysis = args_parsed.analysis
+    analysis: bool = args_parsed.analysis
 
     if not (0 <= simulation < len(SCENARIOS)) or not (
         0 <= case < len(SCENARIOS[simulation]["specific"])
@@ -64,6 +72,10 @@ if __name__ == "__main__":
         curr_exp["labels"] = [curr_exp["labels"][case]]
     n_exp = len(curr_exp["specific"])
 
+    # #################################
+    # ########## SIMULATIONS ##########
+    # #################################
+
     # array to collect all simulations results
     expX = np.zeros(1)
     expU = np.zeros(1)
@@ -72,7 +84,6 @@ if __name__ == "__main__":
     expStime = np.zeros(1)
     Ts_sim = np.zeros(n_exp)
 
-    # ########## SIMULATIONS ##########
     for jj in range(n_exp):
         args = curr_exp["common"] | curr_exp["specific"][jj]
         print(f"Simulation {curr_exp['simulation']} with parameters: ")
@@ -102,6 +113,9 @@ if __name__ == "__main__":
         expStime[:, jj] = np.repeat(cpt_sim, expStime.shape[0] / cpt_sim.shape[0])
         Ts_sim[jj] = ts_sim
 
+    # ##################################################
+    # ########## NUMERICAL STATES PERFORMANCE ##########
+    # ##################################################
     control_on: bool = (
         False
         if ("Ts" in curr_exp["common"].keys()) and (curr_exp["common"]["Ts"] >= 1)
@@ -110,7 +124,6 @@ if __name__ == "__main__":
     Tf = Ts_sim[0] * (expX.shape[0] - 1)
     time_dt = np.linspace(0, Tf, expU.shape[0] + 1)
     time = np.linspace(0, Tf, expX.shape[0])
-    # ########## NUMERICAL STATES PERFORMANCE ##########
     if control_on:
         str_res = (
             "underpeak",
@@ -121,16 +134,22 @@ if __name__ == "__main__":
             "rise time",
             "settl time",
         )
+        stepstate: int = 1 if curr_exp["common"]["ref_type"] == "swing-up" else 0
+        diffs: NDArray = np.nonzero(
+            np.ediff1d(np.repeat(expR[:-1, stepstate], n_update, axis=0))
+        )[0]
+        stepindex: int = diffs[0] if len(diffs) != 0 else 0
 
         for state in range(4):
-            multdeg = 180 / np.pi if state % 2 else 1
+            multdeg: float = 180 / np.pi if state % 2 else 1
 
-            signal = expX[1:, state, :] * multdeg
-            reference = np.repeat(expR[:-1, state], n_update, axis=0) * multdeg
-            reference = np.repeat(reference[:, np.newaxis], n_exp, axis=1)
+            signal: NDArray = expX[1:, state, :] * multdeg
+            reference: NDArray = np.repeat(expR[:-1, state], n_update, axis=0) * multdeg
+            reference: NDArray = np.repeat(reference[:, np.newaxis], n_exp, axis=1)
 
-            diffs = np.nonzero(np.ediff1d(reference[:, 0]))[0]
-            stepindex = diffs[0] if len(diffs) != 0 else 0
+            if len(diffs) > 1:
+                signal: NDArray = signal[: diffs[1] - 1, :]
+                reference: NDArray = reference[: diffs[1] - 1, :]
             results: tuple = stepinfo(signal, reference, ts_sim, stepindex)
 
             print(f"{' state ' + str(state) + ' ':#^20}")
@@ -144,8 +163,16 @@ if __name__ == "__main__":
                     print(f"{stat[i]:10.2f} ", end="")
                 print("")
 
+    # ###########################
     # ########## PLOTS ##########
+    # ###########################
     try:
+        xlimits: tuple | None = (
+            (4, 10) if curr_exp["common"]["ref_type"] == "swing-up" else None
+        )
+
+        folder = f"./images/sim_{simulation:0>2}/"
+        save: bool = args_parsed.save_fig
         plot_results(
             time,
             time_dt,
@@ -154,11 +181,32 @@ if __name__ == "__main__":
             expR,
             labels=curr_exp["labels"],
             ctrl_on=control_on,
+            folder=folder,
+            xlimits=xlimits,
+            save=save,
         )
 
         if control_on:
-            plot_cpt(time_dt, expCtime, None, curr_exp["labels"])
-        plot_cpt(time, expStime, None, curr_exp["labels"])
+            plot_cpt(
+                time_dt,
+                expCtime,
+                None,
+                curr_exp["labels"],
+                folder=folder,
+                prefix="ctrl_",
+                xlimits=xlimits,
+                save=save,
+            )
+        plot_cpt(
+            time,
+            expStime,
+            None,
+            curr_exp["labels"],
+            folder=folder,
+            prefix="sim_",
+            xlimits=xlimits,
+            save=save,
+        )
         plt.show()
     except KeyboardInterrupt:
         pass

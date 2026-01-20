@@ -9,7 +9,16 @@ from tqdm import tqdm
 
 
 def plot_results(
-    time, time_dt, state, control, ref, labels, ctrl_on=True, xlimits=(2, 4.5)
+    time,
+    time_dt,
+    state,
+    control,
+    ref,
+    labels,
+    ctrl_on=True,
+    xlimits=None,
+    save=False,
+    folder="./images/",
 ):
     # latexify_plot()
     labels = labels + ["reference"] if ctrl_on else labels
@@ -24,7 +33,8 @@ def plot_results(
     # plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$p$ [m]")
     plt.grid(True)
-    # plt.xlim(xlimits)
+    if xlimits is not None:
+        plt.xlim(xlimits)
 
     # - plot pendulum angle
     plt.subplot(2, 2, 2)
@@ -34,7 +44,8 @@ def plot_results(
     # plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\theta$ [deg]")
     plt.gca().grid(True)
-    # plt.xlim(xlimits)
+    if xlimits is not None:
+        plt.xlim(xlimits)
 
     # - plot cart velocity
     plt.subplot(2, 2, 3)
@@ -44,7 +55,8 @@ def plot_results(
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$v$ [m/s]")
     plt.grid(True)
-    # plt.xlim(xlimits)
+    if xlimits is not None:
+        plt.xlim(xlimits)
 
     # - plot pendulum angular velocity
     plt.subplot(2, 2, 4)
@@ -54,10 +66,13 @@ def plot_results(
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("$\\omega$ [deg/s]")
     plt.grid(True)
-    # plt.xlim(xlimits)
+    if xlimits is not None:
+        plt.xlim(xlimits)
 
     fig.legend(labels, loc="upper center", ncol=1 + len(labels))
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    if save:
+        fig.savefig(folder + "states.png", transparent=True, format="png")
 
     if ctrl_on:
         # plot control input
@@ -67,10 +82,15 @@ def plot_results(
         plt.gca().set_xlabel("time [s]")
         plt.gca().set_ylabel("$F$ [N]")
         plt.grid(True)
-        # plt.xlim(xlimits)
+        if xlimits is not None:
+            plt.xlim(xlimits)
+        if save:
+            plt.savefig(folder + "input.png", transparent=True, format="png")
 
 
-def plot_cpt(t, cpt, Ts=None, labels=[], xlimits=(2, 4.5)):
+def plot_cpt(
+    t, cpt, Ts=None, labels=[], xlimits=None, save=False, folder="./images/", prefix=""
+):
     # latexify_plot()
 
     plt.figure()
@@ -79,10 +99,12 @@ def plot_cpt(t, cpt, Ts=None, labels=[], xlimits=(2, 4.5)):
     plt.gca().set_xlabel("time [s]")
     plt.gca().set_ylabel("cpt [ms]")
     plt.grid(True)
-    # plt.xlim(xlimits)
-
+    if xlimits is not None:
+        plt.xlim(xlimits)
     if Ts is not None:
         plt.hlines(Ts * 1000, t[0], t[-1], linestyles="dashed", alpha=0.7)
+    if save:
+        plt.savefig(folder + prefix + "cputime.png", transparent=True, format="png")
 
 
 def plot_pred_traj(time, time_dt, state, control, x_opt, u_opt, k, shooting_nodes=None):

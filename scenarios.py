@@ -50,6 +50,21 @@ SCENARIOS: list = [
         ],
         "labels": [str(x) for x in [0.01, 0.1, 0.2]],
     },
+    {
+        "simulation": "task 1, extended controlloer",
+        "common": {
+            "ini_type": "down",
+            "ref_type": "swing-up",
+            "mod_type_ocp": "extended",
+            "Q": np.diag([10, 10, 0.1, 0.1, 0.01]),
+        },
+        "specific": [
+            {"R": 0.01},
+            {"R": 0.005},
+            {"R": 0.001},
+        ],
+        "labels": [str(x) for x in [0.01, 0.005, 0.001]],
+    },
     # ################################################
     # #################### TASK 2 ####################
     # ################################################
