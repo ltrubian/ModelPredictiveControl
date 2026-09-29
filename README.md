@@ -11,9 +11,15 @@ The results are in *ModelPredictiveControl.pdf*
 
 ## Examples of usage
 
+### Help
+
 The `help` is a good point to see what kind of comparison are already available in *scenarios.py*.
 
-     ╰─⠠⠵ uv run main.py --help                 
+     python3 main.py --help
+     # uv run main.py --help
+     
+output
+
     usage: main.py [-h] [-s {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}] [-c CASE] [-a] [--save-fig]
     
     It runs simulaitn of inverted pendulum in some predefined and tested scenarios
@@ -60,9 +66,14 @@ The `help` is a good point to see what kind of comparison are already available 
      -s 15 -c [0-1] -> task 3, swing-up maneuver with linear MPC
                    varying: ['mod_type_ocp']
 
+### Single run
+
 A single run allows to investigate a specific configuration of paramters
 
-    ╰─⠠⠵ uv run main.py -s 2 -c 1
+    python3 main.py -s 2 -c 1
+
+with output containing both summary of parameters and results (plus plots)
+
     Simulation task 1, extended controlloer with parameters: 
     {'ini_type': 'down',
      'ref_type': 'swing-up',
@@ -89,9 +100,14 @@ A single run allows to investigate a specific configuration of paramters
              labels underpeak Upeak time       peak  peak time  overshoot  rise time settl time 
                 0.1   -321.65       5.94     321.65       5.94        inf       0.00      15.00 
 
-While the flag `-a` (or `--analysis`) allows a compaparison varying a specific parameter
+### Multiple runs
 
-    ╰─⠠⠵ uv run main.py -s 2 -a  
+While the flag `-a` (or `--analysis`) allows a **comparison** varying a specific parameter
+
+    python3 main.py -s 2 -a  
+
+with output containing both summary of parameters and results (plus plots)
+
     Simulation task 1, extended controlloer with parameters: 
     {'ini_type': 'down',
      'ref_type': 'swing-up',
