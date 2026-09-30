@@ -223,3 +223,6 @@ inverted*.json
 *.fdb_latexmk
 **/tex/*.pdf
 *.mp4
+images/
+trubian_2125512/
+report/*.txt
