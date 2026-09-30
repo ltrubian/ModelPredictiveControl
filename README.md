@@ -7,7 +7,7 @@ The main goal of the project is to familiarize with the *ACADOS* library, direct
 
 More details in *docs/Description.pdf*
 
-The results are in *ModelPredictiveControl.pdf*
+The results are in *docs/ModelPredictiveControl.pdf*
 
 ## Examples of usage
 
